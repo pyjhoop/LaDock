@@ -3,6 +3,7 @@ import { TitleBar } from '../components/TitleBar';
 import { Overlays } from '../features/keys/Overlays';
 import { installKeyHandler } from '../features/keys/keys';
 import { Workspace } from '../features/layout/Workspace';
+import { Sidebar } from '../features/sessions/Sidebar';
 import { TerminalPane } from '../features/terminal/TerminalPane';
 
 // M0-04 검증용: `?stress=20`이면 터미널 N개를 띄우고 WebGL/DOM 렌더러 수를 보여준다.
@@ -46,7 +47,14 @@ export function App() {
     <div className="app">
       <TitleBar />
       <main className="main" style={stress ? { flexDirection: 'column' } : undefined}>
-        {stress ? <StressGrid count={stress} /> : <Workspace />}
+        {stress ? (
+          <StressGrid count={stress} />
+        ) : (
+          <>
+            <Sidebar />
+            <Workspace />
+          </>
+        )}
       </main>
       <Overlays />
     </div>

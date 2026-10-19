@@ -2,6 +2,9 @@ import { useState } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { applyTheme, loadTheme, nextTheme, type ThemeMode } from '../app/theme';
 
+import { TitleTabs } from '../features/sessions/TitleTabs';
+import { useSessionsUi } from '../features/sessions/ui';
+
 const THEME_LABEL: Record<ThemeMode, string> = { dark: '다크', light: '라이트', system: '시스템' };
 
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4 } as const;
@@ -9,6 +12,7 @@ const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4 } as con
 export function TitleBar() {
   const [theme, setTheme] = useState<ThemeMode>(loadTheme);
   const win = getCurrentWindow();
+  const toggleSidebar = useSessionsUi((s) => s.toggleSidebar);
 
   const cycleTheme = () => {
     const next = nextTheme(theme);
@@ -18,10 +22,19 @@ export function TitleBar() {
 
   return (
     <header className="titlebar" data-tauri-drag-region>
+      <button
+        className="icon-btn menu-btn"
+        onClick={toggleSidebar}
+        title="사이드바 접기/펼치기"
+        aria-label="사이드바"
+      >
+        ☰
+      </button>
       <div className="brand" data-tauri-drag-region>
         <span className="mark" />
         LaDock
       </div>
+      <TitleTabs />
       <div className="spacer" data-tauri-drag-region />
       <button className="theme-btn" onClick={cycleTheme} title="테마 전환">
         테마: {THEME_LABEL[theme]}

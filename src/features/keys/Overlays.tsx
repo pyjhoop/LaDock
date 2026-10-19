@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useStore } from '../../store/store';
+import { TreeOverlay } from '../sessions/TreeOverlay';
 import { HELP_ROWS, prefixLabel } from './keymap';
 import { useKeys } from './keys';
 import './keys.css';
@@ -9,10 +10,13 @@ function HelpOverlay() {
   const close = useKeys((s) => s.closeOverlay);
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
       if (e.key === 'Escape' || e.key === 'Enter' || e.key === '?') close();
     };
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    (document.activeElement as HTMLElement | null)?.blur();
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
   }, [close]);
   return (
     <div className="overlay" onMouseDown={close}>
@@ -86,6 +90,7 @@ export function Overlays() {
     <>
       {prefixActive && <div className="prefix-badge">PREFIX</div>}
       {overlay?.kind === 'help' && <HelpOverlay />}
+      {overlay?.kind === 'tree' && <TreeOverlay />}
       {overlay?.kind === 'rename' && (
         <RenameOverlay
           key={overlay.id}
