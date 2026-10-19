@@ -149,8 +149,17 @@ export function TerminalPane({
     // 폰: PTY를 새로 만들지 않고 PC가 이미 띄운 PTY에 붙는다. 크기는 PC가 정한다.
     let detach: (() => void) | undefined;
     const fitRemoteFont = () => {
-      const px = Math.floor((host.clientWidth - 8) / (term.cols * 0.6));
-      term.options.fontSize = Math.max(5, Math.min(14, px));
+      // PC가 정한 cols×rows가 호스트에 통째로 들어오도록 폭·높이 중 빡빡한 쪽에 글자 크기를 맞춘다.
+      const screen = host.querySelector('.xterm-screen');
+      const w = host.clientWidth - 4;
+      const h = host.clientHeight - 4;
+      if (!screen || w <= 0 || h <= 0) return;
+      const cur = term.options.fontSize ?? 12;
+      const sw = (screen as HTMLElement).offsetWidth;
+      const sh = (screen as HTMLElement).offsetHeight;
+      if (sw <= 0 || sh <= 0) return;
+      const next = Math.max(4, Math.min(28, cur * Math.min(w / sw, h / sh)));
+      if (Math.abs(next - cur) >= 0.25) term.options.fontSize = Math.round(next * 4) / 4;
     };
     const startRemote = async () => {
       if (!remoteClient || !paneKey) return;
@@ -165,7 +174,7 @@ export function TerminalPane({
         },
         onSize: (cols, rows) => {
           term.resize(cols, rows);
-          fitRemoteFont();
+          requestAnimationFrame(fitRemoteFont);
         },
       });
     };
