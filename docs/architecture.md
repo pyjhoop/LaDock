@@ -136,6 +136,7 @@ interface LimitStatus {
 | `pty_write` | `{ paneId, data }` | – | M0-02 |
 | `pty_resize` | `{ paneId, cols, rows }` | – | M0-02 |
 | `pty_kill` | `{ paneId }` | – | M0-02 |
+| `pty_ack` | `{ paneId, bytes }` — xterm이 처리 끝낸 바이트 수 (흐름 제어, 미확인 1MB 상한) | – | M0-02 |
 | 이벤트 `pty://exit` | – | `{ paneId, code }` | M0-02 |
 | `shells_detect` | – | `ShellProfile[]` | M1-06 |
 | `providers_detect` | – | `ProviderStatus[]` | M2-01 |
