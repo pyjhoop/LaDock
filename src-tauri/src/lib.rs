@@ -1,5 +1,6 @@
 mod bridge;
 mod limits;
+mod persist;
 mod providers;
 mod pty;
 mod pty_ipc;
@@ -37,6 +38,10 @@ pub fn run() {
             shells::shells_detect,
             providers::providers_detect,
             limits::limits_get,
+            persist::state_load,
+            persist::state_save,
+            persist::state_quarantine,
+            persist::dirs_exist,
             bridge::claude_bridge_status,
             bridge::claude_bridge_connect,
             bridge::claude_bridge_disconnect

@@ -1,0 +1,39 @@
+.restore-actions {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0;
+}
+.restore-actions button {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+.restore-actions button.primary {
+  border-color: var(--accent);
+}
+.restore-notice {
+  position: fixed;
+  left: 50%;
+  bottom: 40px;
+  transform: translateX(-50%);
+  max-width: min(720px, 90vw);
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+  font-size: 12px;
+  z-index: 50;
+}
+.restore-notice button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}

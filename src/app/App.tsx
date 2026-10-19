@@ -5,6 +5,7 @@ import { useProviders } from '../features/ai/providers';
 import { useLimits } from '../features/limits/limits';
 import { Overlays } from '../features/keys/Overlays';
 import { installKeyHandler } from '../features/keys/keys';
+import { RestoreGate } from '../features/persist/RestoreGate';
 import { PaneChips } from '../features/layout/PaneChips';
 import { Workspace } from '../features/layout/Workspace';
 import { Sidebar } from '../features/sessions/Sidebar';
@@ -61,23 +62,25 @@ export function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   return (
-    <div className="app">
-      <TitleBar />
-      <main className="main" style={stress ? { flexDirection: 'column' } : undefined}>
-        {stress ? (
-          <StressGrid count={stress} />
-        ) : (
-          <>
-            <Sidebar />
-            <div className="work">
-              {narrow && <PaneChips />}
-              <Workspace />
-            </div>
-          </>
-        )}
-      </main>
-      <StatusBar />
-      <Overlays />
-    </div>
+    <RestoreGate>
+      <div className="app">
+        <TitleBar />
+        <main className="main" style={stress ? { flexDirection: 'column' } : undefined}>
+          {stress ? (
+            <StressGrid count={stress} />
+          ) : (
+            <>
+              <Sidebar />
+              <div className="work">
+                {narrow && <PaneChips />}
+                <Workspace />
+              </div>
+            </>
+          )}
+        </main>
+        <StatusBar />
+        <Overlays />
+      </div>
+    </RestoreGate>
   );
 }

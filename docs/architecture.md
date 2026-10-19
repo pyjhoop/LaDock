@@ -146,7 +146,10 @@ interface LimitStatus {
 | 이벤트 `limits://changed` | – | `LimitStatus[]` | M2-03 |
 | 이벤트 `claude-bridge://changed` | – | `{ state, detail, original? }` — 시작 때 `stale`일 때만 | M2-03 |
 | `claude_bridge_status` / `_connect` / `_disconnect` | `_connect`는 `{ confirm: true }` 필수 | `{ state: connected｜disconnected｜stale｜unavailable, detail, original? }` | M2-03 |
-| `state_load` / `state_save` | `AppState` | `AppState` | M3-01 |
+| `state_load` | – | 저장 파일 원문 `string｜null` (검증 · 마이그레이션은 프론트) | M3-01 |
+| `state_save` | `{ json }` — `{ version, state: AppState }` 직렬화, 임시 파일 후 교체 | – | M3-01 |
+| `state_quarantine` | – | 읽을 수 없는 `state.json`을 `state.corrupt-<초>.json`으로 옮기고 그 경로 | M3-01 |
+| `dirs_exist` | `{ paths[] }` | `bool[]` | M3-01 |
 | `settings_load` / `settings_save` | `Settings` | `Settings` | M3-02 |
 
 ## 보안 경계
