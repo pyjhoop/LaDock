@@ -20,7 +20,12 @@
 - [x] 서명된 설치 파일 + `.sig` 생성
 - [x] 설치된 이전 버전이 새 릴리스를 감지하고 업데이트 후 새 버전으로 재시작 (미검증, 위와 동일)
 
-## 릴리스 절차 (로컬 빌드)
+## 릴리스 절차 (GitHub Actions, 기본)
+1. 세 파일의 버전을 올리고 커밋한다.
+2. 주석 태그를 푸시한다: `git tag -a vX.Y.Z -m "릴리스 노트"` → `git push origin main vX.Y.Z`. 태그 메시지가 릴리스 노트가 된다.
+3. `.github/workflows/release.yml`이 검사 · 서명 빌드 · 릴리스 업로드까지 한다. 서명 키는 저장소 시크릿 `TAURI_SIGNING_PRIVATE_KEY`(ladock.key 파일 내용, 암호 없음).
+
+## 릴리스 절차 (로컬 빌드, 대체)
 1. `package.json` · `src-tauri/Cargo.toml` · `src-tauri/tauri.conf.json`의 버전을 올린다.
 2. 서명 키를 환경변수로 주고 빌드한다 (PowerShell):
    ```
@@ -38,3 +43,4 @@
   - 설치 방식 `installMode: passive` (진행바만 보이고 묻지 않음), 이후 `relaunch`.
   - 개발 모드(`pnpm tauri dev`)에서는 자동 확인을 하지 않는다. 설정의 수동 확인은 동작하지만 개발 빌드는 설치형이 아니라 설치 단계가 의미 없다.
   - 로컬에서 `pnpm tauri build`로 서명 설치 파일 + `.sig`, `latest.json` 생성까지 확인. 업데이트 적용 자체는 v1.0.1 릴리스가 있어야 확인 가능해서 미확인.
+- 2026-10-19: GitHub Actions 릴리스 워크플로 추가, 시크릿 등록. 아직 실제 태그로 돌려 보지 않았다 (다음 릴리스에서 확인).

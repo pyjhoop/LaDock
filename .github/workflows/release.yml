@@ -1,0 +1,63 @@
+# v* 태그를 푸시하면 서명된 설치 파일을 빌드해 GitHub 릴리스로 올린다.
+# 필요한 시크릿: TAURI_SIGNING_PRIVATE_KEY (ladock.key 파일의 내용), 암호는 없다.
+name: release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 태그와 package.json 버전 확인
+        shell: bash
+        run: |
+          version=$(node -p "require('./package.json').version")
+          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
+            echo "태그 $GITHUB_REF_NAME 와 package.json 버전 v$version 이 다릅니다"
+            exit 1
+          fi
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: cargo test --manifest-path src-tauri/Cargo.toml
+
+      - name: 빌드
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ''
+        run: pnpm tauri build
+
+      - name: 릴리스 올리기
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 주석 태그(git tag -a)의 메시지를 릴리스 노트로 쓴다. 없으면 버전만.
+          git fetch --force origin "refs/tags/$GITHUB_REF_NAME:refs/tags/$GITHUB_REF_NAME"
+          notes=$(git tag -l --format='%(contents)' "$GITHUB_REF_NAME")
+          [ -n "$notes" ] || notes="LaDock $GITHUB_REF_NAME"
+          node scripts/make-latest-json.mjs "$notes"
+          dir=src-tauri/target/release/bundle/nsis
+          version=${GITHUB_REF_NAME#v}
+          gh release create "$GITHUB_REF_NAME" \
+            "$dir/LaDock_${version}_x64-setup.exe" "$dir/latest.json" \
+            --title "$GITHUB_REF_NAME" --notes "$notes"
