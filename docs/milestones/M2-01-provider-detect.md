@@ -13,7 +13,7 @@ PC에 설치된 AI CLI와 로그인 · 구독 상태를 자동으로 알아낸�
 - [x] 실행 파일 찾기(PATH + 알려진 경로) → `--version` (타임아웃 5초)
 - [x] 인증 파일은 읽기 전용, **허용된 필드만** 파싱 (아래 표)
 - [x] 경고: `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `GEMINI_API_KEY`가 환경변수에 있으면 `warnings`에 추가
-- [ ] 다시 감지 시점: 앱 시작, 설정 파일 변경 감시(`notify` crate) → `providers://changed`, 수동 새로고침(M2-05) — 감시 코드는 작성, 앱을 띄워 이벤트가 오는지는 미확인. 수동 새로고침은 M2-05
+- [x] 다시 감지 시점: 앱 시작, 설정 파일 변경 감시(`notify` crate) → `providers://changed`, 수동 새로고침(M2-05) — 감시 코드는 작성, 앱을 띄워 이벤트가 오는지는 미확인. 수동 새로고침은 M2-05
 - [x] 보안 테스트: IPC 응답 · 로그에 토큰 문자열이 없는지
 
 ## 감지 방법 (2026-10-19, 이 PC에서 확인)
@@ -35,7 +35,7 @@ PC에 설치된 AI CLI와 로그인 · 구독 상태를 자동으로 알아낸�
 
 ## 완료 기준
 - [x] 이 PC에서: Claude = subscription(pro), Gemini = subscription(oauth-personal), agy = 설치 + 인증 판별 결과 기록, Codex = 미설치
-- [ ] 인증 파일을 바꾸면(예: 로그아웃) 몇 초 안에 상태가 바뀜
+- [x] 인증 파일을 바꾸면(예: 로그아웃) 몇 초 안에 상태가 바뀜
 - [x] 토큰 문자열이 IPC · 로그 어디에도 없음 (테스트로 확인)
 
 ## 작업 기록
@@ -46,3 +46,5 @@ PC에 설치된 AI CLI와 로그인 · 구독 상태를 자동으로 알아낸�
 - agy 판별은 `agy models` 종료 코드로 한다. 로그아웃 상태에서의 실제 동작은 확인 못 함 (실패하면 `logged_out`, 10초 초과면 `unknown`).
 - 보안 테스트: 실제 인증 파일의 `*token*` 문자열 값 5개가 `providers_detect` JSON에 없음을 확인 (`ipc_output_has_no_token_values`). 인증 파일은 필드 단위로만 파싱하고 로그(stderr)에는 경로·오류만 남긴다.
 - 남은 것: 파일 변경 감시(`providers://changed`)와 "몇 초 안에 상태 변경"은 앱을 띄워 확인해야 함 → 그래서 상태는 🟨 유지.
+- 2026-10-19 **검증**: 감시 함수를 `emit` 클로저를 받는 `watch()`로 나누고(`start_watcher`는 이를 감싸 `app.emit`), 임시 홈에서 실제 `notify` 감시를 돌리는 `watch_e2e::watchers_emit_events_in_temp_home`(ignored)을 추가. 결과: 인증 파일 `pro→max` 3.4초 만에 `providers://changed`(plan max), 파일 삭제 시 3.4초 만에 `logged_out`, 인증과 무관한 파일 변경(상태 동일)은 이벤트 없음, 이벤트 본문에 토큰 값 없음. 수동 새로고침은 M2-05의 [다시 확인](`providers_detect`).
+  - 실행: `USERPROFILE`/`APPDATA`를 `...e2e...` 임시 경로로 지정하고 `cargo test --no-run`으로 만든 `target/debug/deps/ladock_lib-*.exe watchers_emit --ignored --nocapture`. (`tauri`의 `test` 기능으로 mock 앱을 쓰면 테스트 exe가 Windows에서 `0xC0000139`로 시작하지 못해 클로저 방식으로 바꿈.)

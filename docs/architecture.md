@@ -15,7 +15,7 @@ Tauri v2 (Rust)
  ├─ pty       : spawn / write / resize / kill, 출력 배칭
  ├─ shells    : 셸 프로필 감지
  ├─ providers : 구독 감지 (파일 파싱 + --version), 파일 감시
- ├─ limits    : 한도 읽기 (Claude 브리지 파일, Gemini 추정)
+ ├─ limits    : 한도 읽기 (Claude 브리지 파일, Antigravity `agy /usage`)
  ├─ bridge    : `ladock.exe statusline-bridge` 서브커맨드 (창 없이 실행)
  └─ store     : state.json / settings.json 읽기·쓰기
 ```
@@ -39,8 +39,8 @@ LaDock/
 ├─ eslint.config.js  .prettierrc.json  tsconfig*.json  vite.config.ts   # vitest 설정도 vite.config.ts
 └─ src-tauri/
    └─ src/{main.rs, lib.rs, pty.rs, shells.rs, store.rs, bridge.rs,
-           providers/{mod,claude,codex,gemini,antigravity}.rs,
-           limits/{mod,claude,gemini}.rs}
+           providers/{mod,claude,codex,antigravity}.rs,
+           limits/{mod,claude,antigravity}.rs}
 ```
 
 ## 저장 위치
@@ -93,7 +93,7 @@ interface AppState { sessions: Session[]; activeSessionId: string; panes: Record
 interface ShellProfile { id: string; name: string; path: string; args: string[]; isDefault: boolean; }
 
 // ── AI 구독 ──────────────────────────────────────
-type ProviderId = 'claude' | 'codex' | 'gemini' | 'antigravity';
+type ProviderId = 'claude' | 'codex' | 'antigravity';
 type AuthState = 'subscription' | 'api_key' | 'logged_out' | 'unknown';
 
 interface ProviderStatus {
@@ -115,8 +115,9 @@ interface LimitWindow {
   key: '5h' | '7d' | '1d';
   usedPct: number;            // 0–100
   resetsAt?: number;          // unix 초
-  used?: number;              // 횟수 기반 한도일 때 (Gemini 일일 요청)
+  used?: number;              // 횟수 기반 한도일 때
   limit?: number;
+  group?: string;          // 모델 묶음별 한도 (Antigravity: "Gemini Models" 등)
 }
 
 interface LimitStatus {
@@ -141,7 +142,7 @@ interface LimitStatus {
 | `shells_detect` | – | `ShellProfile[]` | M1-06 |
 | `providers_detect` | – | `ProviderStatus[]` | M2-01 |
 | 이벤트 `providers://changed` | – | `ProviderStatus[]` | M2-01 |
-| `limits_get` | `{ force?: boolean }` | `LimitStatus[]` | M2-03, M2-04 |
+| `limits_get` | `{ force?: boolean }` — `force`면 Antigravity를 지금 다시 읽음(약 5초), 아니면 캐시 + 낡았을 때 백그라운드 갱신 | `LimitStatus[]` | M2-03, M2-04 |
 | 이벤트 `limits://changed` | – | `LimitStatus[]` | M2-03 |
 | 이벤트 `claude-bridge://changed` | – | `{ state, detail, original? }` — 시작 때 `stale`일 때만 | M2-03 |
 | `claude_bridge_status` / `_connect` / `_disconnect` | `_connect`는 `{ confirm: true }` 필수 | `{ state: connected｜disconnected｜stale｜unavailable, detail, original? }` | M2-03 |
@@ -150,7 +151,7 @@ interface LimitStatus {
 
 ## 보안 경계
 
-- 인증 파일(`~/.claude/.credentials.json`, `~/.gemini/oauth_creds.json`, `~/.codex/auth.json` 등)은 **Rust에서만 읽기 전용**으로 열고, 허용된 메타데이터 필드만 꺼낸다.
+- 인증 파일(`~/.claude/.credentials.json`, `~/.codex/auth.json` 등)은 **Rust에서만 읽기 전용**으로 열고, 허용된 메타데이터 필드만 꺼낸다.
 - 토큰 값(access / refresh / id token)은 **IPC를 넘지 않고, 로그에 남기지 않고, 저장하지 않는다.**
 - 구독 토큰으로 비공개 API를 호출하지 않는다. 한도는 각 CLI가 공식으로 내주는 데이터만 쓴다.
 - 사용자 설정 파일(예: `~/.claude/settings.json`)을 바꿀 때는 **사용자 확인 → 백업 → 변경** 순서를 지키고, 되돌리기 기능을 같이 만든다.

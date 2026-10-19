@@ -15,7 +15,7 @@
   - claude → `ANTHROPIC_API_KEY` · codex → `OPENAI_API_KEY` · gemini/agy → `GEMINI_API_KEY`, `GOOGLE_API_KEY`
 - [x] cwd 상속: 포커스된 pane의 현재 폴더 — OSC 7로 추적 (pwsh 프롬프트 함수에 OSC 7 출력 추가하는 방법 검토), 안 되면 그 pane의 시작 cwd
 - [x] **실행 팔레트** (`Ctrl+B a`): 숫자 키 = provider, `R` / `D` / `T` = 위치(오른쪽 분할 / 아래 분할 / 현재 세션에 새 탭), Esc 닫기, 미설치는 비활성
-- [ ] 한도 팝오버의 [▶ 실행] 버튼과 같은 실행 함수 공유 (M2-05)
+- [x] 한도 팝오버의 [▶ 실행] 버튼과 같은 실행 함수 공유 (M2-05)
 
 ## 명세
 - agent pane 헤더 아이콘 · 색: provider 고유값 (`✻` Claude, `◎` Codex, `✦` Gemini, `▲` Antigravity)
@@ -34,3 +34,4 @@
 - 남은 일: 실제 앱에서 claude · gemini · agy 실행 · cwd · API 키 제거 확인, "셸 안에서 실행" 옵션, provider 기본 인자 값(M3-02), 한도 팝오버 버튼(M2-05).
 - 2026-10-19 사용자가 실제 앱에서 동작 확인 → 완료 처리. 권한 확인 건너뛰기 플래그를 기본 ON으로 추가(`SKIP_PERMISSIONS`: claude/agy `--dangerously-skip-permissions`, gemini `--yolo`, codex `--dangerously-bypass-approvals-and-sandbox` — codex는 미설치라 미검증). 설정 토글은 M3-02.
 - 완료에서 제외(미구현): "셸 안에서 실행" 옵션과 provider 기본 인자 값은 M3-02 설정으로, 한도 팝오버 [▶ 실행] 버튼은 M2-05로 넘긴다.
+- 2026-10-19 M2-05 팝오버의 [▶ 실행]이 `launchAgent(id, 'row')`를 그대로 호출함을 확인(가짜 IPC에서 `pty_spawn` 인자: claude 경로, `--dangerously-skip-permissions`, 구독 전용 ON이면 `envRemove: [ANTHROPIC_API_KEY]`). 구독 전용 토글은 팝오버에 있고 저장은 M3-02.
