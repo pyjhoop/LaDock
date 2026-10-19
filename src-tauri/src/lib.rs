@@ -1,5 +1,6 @@
 mod pty;
 mod pty_ipc;
+mod shells;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -10,7 +11,8 @@ pub fn run() {
             pty_ipc::pty_write,
             pty_ipc::pty_resize,
             pty_ipc::pty_kill,
-            pty_ipc::pty_ack
+            pty_ipc::pty_ack,
+            shells::shells_detect
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

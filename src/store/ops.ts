@@ -100,9 +100,9 @@ const without = (panes: Record<string, PaneSpec>, ids: string[]) => {
 const wrap = (i: number, n: number) => ((i % n) + n) % n;
 
 /** 포커스된 pane에서 cwd · 프로필을 물려받은 새 셸 pane */
-function inheritedPane(s: AppState): PaneSpec {
+function inheritedPane(s: AppState, profileId?: string): PaneSpec {
   const f = focusedPane(s);
-  return newShellPane(f?.profileId ?? DEFAULT_PROFILE, f?.cwd ?? '');
+  return newShellPane(profileId ?? f?.profileId ?? DEFAULT_PROFILE, f?.cwd ?? '');
 }
 
 // ── pane ─────────────────────────────────────────
@@ -116,11 +116,11 @@ export function focusPane(s: AppState, paneId: string): AppState {
   }));
 }
 
-/** 포커스된 pane을 나눈다. 새 pane이 포커스를 받는다. */
-export function splitFocused(s: AppState, dir: 'row' | 'col'): AppState {
+/** 포커스된 pane을 나눈다. 새 pane이 포커스를 받는다. profileId를 주면 그 셸로 띄운다. */
+export function splitFocused(s: AppState, dir: 'row' | 'col', profileId?: string): AppState {
   const sess = activeSession(s);
   const win = activeWindow(sess);
-  const pane = inheritedPane(s);
+  const pane = inheritedPane(s, profileId);
   return {
     ...mapSession(s, sess.id, (x) =>
       mapWindow(x, win.id, (w) => ({

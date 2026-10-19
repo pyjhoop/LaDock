@@ -55,15 +55,6 @@ struct ExitEvent {
     code: i32,
 }
 
-/// 셸 프로필 해석은 M1-06 전까지 최소한만: 알려진 id → 실행 파일, 없으면 pwsh.
-fn resolve_shell(profile_id: &str) -> String {
-    match profile_id {
-        "cmd" => "cmd.exe".into(),
-        "powershell" => "powershell.exe".into(),
-        _ => "pwsh.exe".into(),
-    }
-}
-
 #[tauri::command]
 pub fn pty_spawn(
     app: AppHandle,
@@ -72,11 +63,14 @@ pub fn pty_spawn(
     on_data: Channel<InvokeResponseBody>,
 ) -> Result<PaneId, String> {
     let pane_id = registry.next.fetch_add(1, Ordering::Relaxed) + 1;
+    // command가 없으면 프로필(감지된 셸)로 해석한다. 명시한 args가 프로필 기본 인자보다 우선.
+    let (command, profile_args) = match args.command {
+        Some(c) => (c, vec![]),
+        None => crate::shells::resolve(&args.profile_id),
+    };
     let opts = SpawnOptions {
-        command: args
-            .command
-            .unwrap_or_else(|| resolve_shell(&args.profile_id)),
-        args: args.args.unwrap_or_default(),
+        command,
+        args: args.args.unwrap_or(profile_args),
         cwd: args.cwd.map(PathBuf::from),
         cols: args.cols,
         rows: args.rows,

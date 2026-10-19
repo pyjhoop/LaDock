@@ -6,7 +6,7 @@ import type { AppState, SplitPath } from './types';
 
 interface Actions {
   focusPane: (paneId: string) => void;
-  splitFocused: (dir: 'row' | 'col') => void;
+  splitFocused: (dir: 'row' | 'col', profileId?: string) => void;
   closePane: (paneId: string) => void;
   setRatio: (windowId: string, path: SplitPath, ratio: number) => void;
   moveFocus: (dir: Direction) => void;
@@ -38,7 +38,7 @@ export const useStore = create<AppState & Actions>()((set) => {
   return {
     ...ops.createInitialState(),
     focusPane: (id) => apply((s) => ops.focusPane(s, id)),
-    splitFocused: (dir) => apply((s) => ops.splitFocused(s, dir)),
+    splitFocused: (dir, profileId) => apply((s) => ops.splitFocused(s, dir, profileId)),
     closePane: (id) => apply((s) => ops.closePane(s, id)),
     setRatio: (w, p, r) => apply((s) => ops.setRatio(s, w, p, r)),
     moveFocus: (d) => apply((s) => ops.moveFocus(s, d)),

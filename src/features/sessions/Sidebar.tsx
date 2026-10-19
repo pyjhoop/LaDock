@@ -1,8 +1,9 @@
-import type { MouseEvent } from 'react';
+import { useEffect, type MouseEvent } from 'react';
 import { windowLabel } from '../../store/ops';
 import { useStore } from '../../store/store';
 import { leaves } from '../../store/tree';
 import { InlineRename } from './InlineRename';
+import { shellGlyph, useShells } from './shells';
 import { Glyphs } from './TitleTabs';
 import { createSessionAndRename, providersOf, useSessionsUi } from './ui';
 
@@ -13,6 +14,10 @@ export function Sidebar() {
   const drawer = mode !== 'wide';
   const open = useSessionsUi((s) => (s.mode === 'wide' ? s.sidebarOpen : s.drawerOpen));
   const renaming = useSessionsUi((s) => s.renaming);
+  const shells = useShells((s) => s.profiles);
+  useEffect(() => {
+    void useShells.getState().load();
+  }, []);
   if (!open) return null;
   const { renameSession, renameWindow } = state;
   const { startRename, stopRename, closeDrawer } = useSessionsUi.getState();
@@ -116,6 +121,30 @@ export function Sidebar() {
             );
           })}
         </div>
+        {shells.length > 0 && (
+          <div>
+            <div className="sec-head">
+              <h3>셸 프로필 · {shells.length}</h3>
+            </div>
+            <div className="tree">
+              {shells.map((p) => (
+                <button
+                  key={p.id}
+                  className="t-shell"
+                  title={`${p.path}\n클릭: 포커스된 pane 오른쪽에 새 pane`}
+                  onClick={() => {
+                    state.splitFocused('row', p.id);
+                    if (drawer) closeDrawer();
+                  }}
+                >
+                  <span className="sg">{shellGlyph(p.id)}</span>
+                  <span className="name">{p.name}</span>
+                  {p.isDefault && <span className="def">기본</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </aside>
     </>
   );

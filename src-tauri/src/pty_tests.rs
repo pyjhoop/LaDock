@@ -157,3 +157,34 @@ fn heavy_output_stays_bounded() {
         "max_inflight={max_inflight}"
     );
 }
+
+/// 감지된 모든 셸이 ConPTY에서 실제로 뜨고 명령을 실행한다 (M1-06).
+#[test]
+fn every_detected_shell_runs() {
+    let run_arg = |id: &str| -> Vec<&'static str> {
+        match id {
+            "cmd" => vec!["/c", "echo ladock-ok"],
+            "pwsh" | "powershell" => vec!["-NoProfile", "-Command", "echo ladock-ok"],
+            _ => vec![],
+        }
+    };
+    for p in crate::shells::detect() {
+        let mut args = p.args.clone();
+        match p.id.as_str() {
+            "bash" => args = vec!["-c".into(), "echo ladock-ok".into()],
+            id if id.starts_with("wsl:") => {
+                args.extend(["--".into(), "echo".into(), "ladock-ok".into()])
+            }
+            id => args = run_arg(id).into_iter().map(String::from).collect(),
+        }
+        let (out, code) = run(SpawnOptions {
+            command: p.path.clone(),
+            args,
+            cols: 100,
+            rows: 30,
+            ..Default::default()
+        });
+        assert!(out.contains("ladock-ok"), "{}: 출력 {out:?}", p.id);
+        assert_eq!(code, 0, "{}", p.id);
+    }
+}

@@ -181,7 +181,8 @@
   gap: 2px;
 }
 .t-sess,
-.t-win {
+.t-win,
+.t-shell {
   width: 100%;
   display: flex;
   align-items: center;
@@ -193,8 +194,32 @@
 .t-sess {
   padding: 6px 8px;
 }
+.t-shell {
+  padding: 5px 8px;
+  font-size: 12.5px;
+}
+.t-shell .name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.t-shell .sg {
+  width: 22px;
+  font: 11px var(--mono);
+  color: var(--accent);
+}
+.t-shell .def {
+  font-size: 10.5px;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  border-radius: 4px;
+  padding: 0 5px;
+}
 .t-sess:hover,
-.t-win:hover {
+.t-win:hover,
+.t-shell:hover {
   background: var(--panel-2);
   color: var(--text);
 }
