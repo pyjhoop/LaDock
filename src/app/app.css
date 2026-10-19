@@ -215,3 +215,11 @@ svg {
     padding: 0 6px 0 9px;
   }
 }
+.sb-btn {
+  display: inline-grid;
+  place-items: center;
+}
+.sb-btn svg {
+  width: 14px;
+  height: 14px;
+}

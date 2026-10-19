@@ -1,10 +1,9 @@
 import type { ReactElement } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { nextTheme, type ThemeMode } from '../app/theme';
-import { useKeys } from '../features/keys/keys';
 import { useSettings } from '../features/settings/settings';
 
-import { IconAuto, IconGear, IconMenu, IconMoon, IconSun } from './icons';
+import { IconAuto, IconMenu, IconMoon, IconSun } from './icons';
 import { TitleTabs } from '../features/sessions/TitleTabs';
 import { useSessionsUi } from '../features/sessions/ui';
 
@@ -50,14 +49,6 @@ export function TitleBar() {
         aria-label="테마 전환"
       >
         <ThemeIcon />
-      </button>
-      <button
-        className="icon-btn"
-        onClick={() => useKeys.getState().openOverlay({ kind: 'settings' })}
-        title="설정"
-        aria-label="설정"
-      >
-        <IconGear />
       </button>
       <button className="win-btn" onClick={() => win.minimize()} aria-label="최소화">
         <svg viewBox="0 0 10 10" {...stroke}>

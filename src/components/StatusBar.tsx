@@ -1,3 +1,4 @@
+import { IconGear } from './icons';
 import { activeSession, activeWindow, windowLabel } from '../store/ops';
 import { useStore } from '../store/store';
 import { leaves } from '../store/tree';
@@ -62,6 +63,14 @@ export function StatusBar() {
         </span>
       </span>
       <LimitBar />
+      <button
+        className="sb-btn"
+        title="설정"
+        aria-label="설정"
+        onClick={() => openOverlay({ kind: 'settings' })}
+      >
+        <IconGear />
+      </button>
       <button
         className="sb-btn"
         title={`단축키 (${prefixLabel(prefix)} ?)`}
