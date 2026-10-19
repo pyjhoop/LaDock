@@ -34,7 +34,7 @@ export interface ProviderMeta {
   args: string[];
 }
 
-export const PROVIDER_ORDER: ProviderId[] = ['claude', 'codex', 'gemini', 'antigravity'];
+export const PROVIDER_ORDER: ProviderId[] = ['claude', 'codex', 'antigravity'];
 
 export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
   claude: {
@@ -51,13 +51,6 @@ export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
     skipPermissionsArgs: ['--dangerously-bypass-approvals-and-sandbox'],
     args: [],
   },
-  gemini: {
-    name: 'Gemini CLI',
-    bin: 'gemini',
-    apiKeyEnv: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'],
-    skipPermissionsArgs: ['--yolo'],
-    args: [],
-  },
   antigravity: {
     name: 'Antigravity',
     bin: 'agy',
@@ -70,12 +63,19 @@ export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
 /** 권한 확인 없이 실행 — 기본 ON. 설정 화면(M3-02) 전까지 상수. */
 export const SKIP_PERMISSIONS = true;
 
-/** "구독으로만 실행" 기본 ON. 설정 화면(M3-02) 전까지 상수. */
-export const SUBSCRIPTION_ONLY = true;
+/** "구독으로만 실행" 기본 ON. 상태바 팝오버에서 바꾸고, 저장은 설정 화면(M3-02)에서. */
+export const useLaunchPrefs = create<{
+  subscriptionOnly: boolean;
+  setSubscriptionOnly: (v: boolean) => void;
+}>()((set) => ({
+  subscriptionOnly: true,
+  setSubscriptionOnly: (subscriptionOnly) => set({ subscriptionOnly }),
+}));
 
 /** 이 pane의 자식 프로세스에서 지울 환경변수 */
 export function envRemoveFor(pane: PaneSpec): string[] | undefined {
-  if (!SUBSCRIPTION_ONLY || pane.kind !== 'agent' || !pane.provider) return undefined;
+  if (!useLaunchPrefs.getState().subscriptionOnly || pane.kind !== 'agent' || !pane.provider)
+    return undefined;
   return PROVIDER_META[pane.provider].apiKeyEnv;
 }
 

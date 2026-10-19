@@ -1,10 +1,9 @@
 //! AI CLI 감지. 인증 파일은 읽기 전용으로 열고 허용된 메타데이터 필드만 꺼낸다.
 //! 토큰 값은 이 모듈 밖으로 나가지 않는다 (IPC · 로그 · 저장 모두).
 
-mod antigravity;
+pub(crate) mod antigravity;
 mod claude;
 mod codex;
-mod gemini;
 mod watch;
 
 use std::io::Read;
@@ -15,6 +14,8 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 use serde::Serialize;
 
 pub use watch::start_watcher;
+#[cfg(test)]
+pub(crate) use watch::watch;
 
 #[derive(Debug, Clone, Copy, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
@@ -97,7 +98,7 @@ pub(crate) fn home() -> Option<PathBuf> {
     std::env::var_os("USERPROFILE").map(PathBuf::from)
 }
 
-fn env_path(var: &str) -> Option<PathBuf> {
+pub(crate) fn env_path(var: &str) -> Option<PathBuf> {
     std::env::var_os(var).map(PathBuf::from)
 }
 
@@ -114,7 +115,7 @@ fn api_key_warning(var: &str, status: &mut ProviderStatus) {
 }
 
 /// PATH에서 먼저 찾고, 없으면 알려진 경로를 본다.
-fn find_exe(names: &[&str], known: &[Option<PathBuf>]) -> Option<PathBuf> {
+pub(crate) fn find_exe(names: &[&str], known: &[Option<PathBuf>]) -> Option<PathBuf> {
     let path_hit = std::env::var_os("PATH").and_then(|paths| {
         std::env::split_paths(&paths)
             .flat_map(|d| names.iter().map(move |n| d.join(n)))
@@ -123,14 +124,14 @@ fn find_exe(names: &[&str], known: &[Option<PathBuf>]) -> Option<PathBuf> {
     path_hit.or_else(|| known.iter().flatten().find(|p| p.is_file()).cloned())
 }
 
-struct RunResult {
-    ok: bool,
-    timed_out: bool,
-    out: String,
+pub(crate) struct RunResult {
+    pub ok: bool,
+    pub timed_out: bool,
+    pub out: String,
 }
 
 /// 창 없이 실행하고 타임아웃이 지나면 죽인다. 실행 자체가 안 되면 None.
-fn run(bin: &Path, args: &[&str], timeout: Duration) -> Option<RunResult> {
+pub(crate) fn run(bin: &Path, args: &[&str], timeout: Duration) -> Option<RunResult> {
     let mut cmd = Command::new(bin);
     cmd.args(args)
         .stdin(Stdio::null())
@@ -186,12 +187,11 @@ fn version_of(bin: &Path) -> Option<String> {
 }
 
 pub fn detect() -> Vec<ProviderStatus> {
-    // agy models, gemini 기동이 느려서 병렬로 돌린다.
+    // agy models 기동이 느려서 병렬로 돌린다.
     std::thread::scope(|s| {
         let tasks = [
             s.spawn(claude::detect),
             s.spawn(codex::detect),
-            s.spawn(gemini::detect),
             s.spawn(antigravity::detect),
         ];
         tasks.into_iter().filter_map(|t| t.join().ok()).collect()
@@ -248,7 +248,6 @@ mod tests {
         let Some(h) = home() else { return };
         let files = [
             h.join(".claude/.credentials.json"),
-            h.join(".gemini/oauth_creds.json"),
             h.join(".codex/auth.json"),
         ];
         let mut checked = 0;

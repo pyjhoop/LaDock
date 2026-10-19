@@ -52,7 +52,6 @@ export function createSessionAndRename() {
 
 export const PROVIDER_GLYPH: Record<ProviderId, { glyph: string; color: string }> = {
   claude: { glyph: '✻', color: '#d97757' },
-  gemini: { glyph: '✦', color: '#5b8def' },
   antigravity: { glyph: '▲', color: '#a67cf0' },
   codex: { glyph: '◎', color: '#8fa1b3' },
 };

@@ -3,6 +3,7 @@ import { useStore } from '../store/store';
 import { leaves } from '../store/tree';
 import { prefixLabel } from '../features/keys/keymap';
 import { useKeys } from '../features/keys/keys';
+import { LimitBar } from '../features/limits/LimitBar';
 
 export function StatusBar() {
   const state = useStore();
@@ -60,7 +61,7 @@ export function StatusBar() {
           <kbd>a</kbd> AI
         </span>
       </span>
-      {/* 한도 표시 자리 — M2-05 */}
+      <LimitBar />
       <button
         className="sb-btn"
         title={`단축키 (${prefixLabel(prefix)} ?)`}

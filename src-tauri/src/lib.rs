@@ -4,6 +4,8 @@ mod providers;
 mod pty;
 mod pty_ipc;
 mod shells;
+#[cfg(test)]
+mod watch_e2e;
 
 pub use bridge::CLI_ARG as BRIDGE_CLI_ARG;
 

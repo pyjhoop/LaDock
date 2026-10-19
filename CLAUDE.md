@@ -1,6 +1,6 @@
 # LaDock
 
-Windows용 개인 터미널 앱. psmux처럼 **세션 → 탭 → 분할 pane** 구조의 터미널 안에서, PC에 설치된 AI CLI(Claude Code · Codex · Gemini CLI · Antigravity `agy`)를 알아서 인식하고 바로 띄워 쓴다. 범용 제품이 아니라 이 PC의 사용자 한 명을 위한 도구다.
+Windows용 개인 터미널 앱. psmux처럼 **세션 → 탭 → 분할 pane** 구조의 터미널 안에서, PC에 설치된 AI CLI(Claude Code · Codex · Antigravity `agy`)를 알아서 인식하고 바로 띄워 쓴다. 범용 제품이 아니라 이 PC의 사용자 한 명을 위한 도구다.
 
 스택: Tauri v2 (Rust) · React + TypeScript · xterm.js · ConPTY(`portable-pty`)
 

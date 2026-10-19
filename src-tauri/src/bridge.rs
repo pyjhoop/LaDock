@@ -193,6 +193,9 @@ fn write_settings(p: &Path, v: &Value, original_text: &str) -> Result<(), String
     if original_text.ends_with('\n') {
         text.push('\n');
     }
+    if original_text.contains("\r\n") {
+        text = text.replace('\n', "\r\n"); // 원본이 CRLF였으면 그대로 둔다
+    }
     write_atomic(p, &text)
 }
 
@@ -361,5 +364,48 @@ mod tests {
     fn rejects_status_line_without_command() {
         let mut s: Value = serde_json::from_str(r#"{"statusLine":{"type":"static"}}"#).unwrap();
         assert!(wrap(&mut s, BRIDGE).is_err());
+    }
+
+    /// 임시 홈 폴더에서 연결 → 해제가 원본을 바이트 단위로 복원하는지 (실제 설정은 건드리지 않음).
+    /// `USERPROFILE`/`APPDATA`/`E2E_SETTINGS_SRC`를 지정해서 빌드된 테스트 exe를 직접 실행한다.
+    #[test]
+    #[ignore]
+    fn connect_disconnect_roundtrip_in_temp_home() {
+        let home = home().unwrap();
+        assert!(
+            home.to_string_lossy().to_lowercase().contains("e2e"),
+            "임시 홈이 아님: {home:?}"
+        );
+        let path = settings_path().unwrap();
+        fs::create_dir_all(path.parent().unwrap()).unwrap();
+        fs::copy(std::env::var("E2E_SETTINGS_SRC").unwrap(), &path).unwrap();
+        let original = fs::read(&path).unwrap();
+
+        assert_eq!(status().state, "disconnected");
+        assert!(claude_bridge_connect(false).is_err());
+        assert_eq!(fs::read(&path).unwrap(), original, "확인 없이 파일이 바뀜");
+
+        assert_eq!(claude_bridge_connect(true).unwrap().state, "connected");
+        let wrapped = fs::read(&path).unwrap();
+        assert_ne!(wrapped, original);
+        let (a, b): (Value, Value) = (
+            serde_json::from_slice(&original).unwrap(),
+            serde_json::from_slice(&wrapped).unwrap(),
+        );
+        let (mut a2, mut b2) = (a.clone(), b.clone());
+        a2.as_object_mut().unwrap().remove("statusLine");
+        b2.as_object_mut().unwrap().remove("statusLine");
+        assert_eq!(a2, b2, "statusLine 말고 다른 키가 바뀜");
+        let backups = fs::read_dir(app_dir().unwrap().join("backups"))
+            .unwrap()
+            .count();
+        assert!(backups >= 1, "백업 없음");
+
+        // 두 번 연결해도 원래 명령이 보존된다
+        assert_eq!(claude_bridge_connect(true).unwrap().state, "connected");
+
+        assert_eq!(claude_bridge_disconnect().unwrap().state, "disconnected");
+        assert_eq!(fs::read(&path).unwrap(), original, "해제 후 원본과 다름");
+        println!("OK: 백업 {backups}개, 원본 {}바이트 복원", original.len());
     }
 }

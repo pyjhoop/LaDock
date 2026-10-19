@@ -103,6 +103,7 @@ fn status_from(snap: Option<Snapshot>) -> LimitStatus {
                 resets_at: w.resets_at,
                 used: None,
                 limit: None,
+                group: None,
             });
         }
     }

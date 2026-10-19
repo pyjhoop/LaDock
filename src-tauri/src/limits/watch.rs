@@ -11,6 +11,13 @@ use super::{get, limits_dir};
 const DEBOUNCE: Duration = Duration::from_millis(200);
 
 pub fn start_watcher(app: AppHandle) {
+    watch(move |name, payload| {
+        let _ = app.emit(name, payload);
+    });
+}
+
+/// 감시 스레드를 시작한다. 이벤트는 `emit(이름, JSON)`으로 내보낸다 (테스트에서 바꿔 끼울 수 있게).
+pub(crate) fn watch(emit: impl Fn(&str, serde_json::Value) + Send + 'static) {
     std::thread::spawn(move || {
         let Some(dir) = limits_dir() else { return };
         if let Err(e) = std::fs::create_dir_all(&dir) {
@@ -26,7 +33,10 @@ pub fn start_watcher(app: AppHandle) {
         }
         while rx.recv().is_ok() {
             while rx.recv_timeout(DEBOUNCE).is_ok() {}
-            let _ = app.emit("limits://changed", get());
+            emit(
+                "limits://changed",
+                serde_json::to_value(get()).unwrap_or_default(),
+            );
         }
     });
 }

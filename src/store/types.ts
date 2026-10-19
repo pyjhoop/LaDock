@@ -1,4 +1,4 @@
-export type ProviderId = 'claude' | 'codex' | 'gemini' | 'antigravity';
+export type ProviderId = 'claude' | 'codex' | 'antigravity';
 
 export type LayoutNode =
   | { type: 'pane'; paneId: string }

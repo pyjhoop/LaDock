@@ -34,6 +34,13 @@ fn same(a: &[ProviderStatus], b: &[ProviderStatus]) -> bool {
 }
 
 pub fn start_watcher(app: AppHandle) {
+    watch(move |name, payload| {
+        let _ = app.emit(name, payload);
+    });
+}
+
+/// 감시 스레드를 시작한다. 이벤트는 `emit(이름, JSON)`으로 내보낸다 (테스트에서 바꿔 끼울 수 있게).
+pub(crate) fn watch(emit: impl Fn(&str, serde_json::Value) + Send + 'static) {
     std::thread::spawn(move || {
         let Some(home) = home() else { return };
         let (tx, rx) = mpsc::channel();
@@ -61,7 +68,10 @@ pub fn start_watcher(app: AppHandle) {
             }
             let now = detect();
             if !same(&last, &now) {
-                let _ = app.emit("providers://changed", &now);
+                emit(
+                    "providers://changed",
+                    serde_json::to_value(&now).unwrap_or_default(),
+                );
                 last = now;
             }
         }

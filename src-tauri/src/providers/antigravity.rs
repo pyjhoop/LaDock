@@ -2,10 +2,15 @@ use std::time::Duration;
 
 use super::{AuthState, ProviderStatus, env_path, find_exe, home, run};
 
+/// `agy.exe` 위치. 한도 읽기(`limits`)도 같은 경로를 쓴다.
+pub(crate) fn find_bin() -> Option<std::path::PathBuf> {
+    let known = [env_path("LOCALAPPDATA").map(|d| d.join(r"agy\bin\agy.exe"))];
+    find_exe(&["agy.exe"], &known)
+}
+
 /// `agy models`가 성공하면 로그인된 것으로 본다 (공식 CLI가 모델 목록을 내줌).
 pub(super) fn detect() -> ProviderStatus {
-    let known = [env_path("LOCALAPPDATA").map(|d| d.join(r"agy\bin\agy.exe"))];
-    let Some(bin) = find_exe(&["agy.exe"], &known) else {
+    let Some(bin) = find_bin() else {
         return ProviderStatus::not_installed("antigravity", "antigravity.google 에서 agy 설치");
     };
     let mut s = ProviderStatus::installed_at("antigravity", &bin);
