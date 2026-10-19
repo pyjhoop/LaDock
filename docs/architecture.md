@@ -143,7 +143,8 @@ interface LimitStatus {
 | 이벤트 `providers://changed` | – | `ProviderStatus[]` | M2-01 |
 | `limits_get` | `{ force?: boolean }` | `LimitStatus[]` | M2-03, M2-04 |
 | 이벤트 `limits://changed` | – | `LimitStatus[]` | M2-03 |
-| `claude_bridge_status` / `_connect` / `_disconnect` | – | 연결 상태 / 연결 / 원래 설정으로 복구 | M2-03 |
+| 이벤트 `claude-bridge://changed` | – | `{ state, detail, original? }` — 시작 때 `stale`일 때만 | M2-03 |
+| `claude_bridge_status` / `_connect` / `_disconnect` | `_connect`는 `{ confirm: true }` 필수 | `{ state: connected｜disconnected｜stale｜unavailable, detail, original? }` | M2-03 |
 | `state_load` / `state_save` | `AppState` | `AppState` | M3-01 |
 | `settings_load` / `settings_save` | `Settings` | `Settings` | M3-02 |
 
