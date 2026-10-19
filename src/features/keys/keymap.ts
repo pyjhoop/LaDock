@@ -18,6 +18,7 @@ export type Command =
   | { id: 'zoom' }
   | { id: 'closePane' }
   | { id: 'palette' }
+  | { id: 'tasks' }
   | { id: 'settings' }
   | { id: 'help' }
   | { id: 'sendPrefix' };
@@ -115,6 +116,8 @@ export function resolveKey(e: KeyLike, prefix: PrefixSpec = DEFAULT_PREFIX): Com
       return { id: 'closePane' };
     case 'KeyA':
       return { id: 'palette' };
+    case 'KeyG':
+      return { id: 'tasks' };
     case 'Period':
       return { id: 'settings' };
   }
@@ -162,6 +165,7 @@ export const HELP_ROWS: HelpRow[] = [
   { keys: 'z', desc: 'pane 줌 토글' },
   { keys: 'x', desc: 'pane 닫기' },
   { keys: 'a', desc: 'AI 실행 팔레트', extension: true },
+  { keys: 'g', desc: '자동 작업 실행', extension: true },
   { keys: '.', desc: '설정', extension: true },
   { keys: '?', desc: '단축키 도움말' },
   { keys: 'prefix 한 번 더', desc: '터미널에 prefix 키 그대로 전달' },

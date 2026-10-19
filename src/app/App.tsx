@@ -11,6 +11,10 @@ import { KeyBar, RemoteGate } from '../features/remote/RemoteGate';
 import { startRemotePublish } from '../features/remote/publish';
 import { installKeyHandler } from '../features/keys/keys';
 import { startSettingsApply } from '../features/settings/apply';
+import { startScheduler } from '../features/tasks/run';
+import { loadRuns, listenRunExit } from '../features/tasks/runs';
+import { TaskLogPage } from '../features/tasks/TaskLogPage';
+import { loadTasks } from '../features/tasks/tasks';
 import { UpdateBanner } from '../features/update/UpdateBanner';
 import { useUpdate } from '../features/update/updater';
 import { RestoreGate } from '../features/persist/RestoreGate';
@@ -60,7 +64,20 @@ export function App() {
   useEffect(() => installKeyHandler(), []);
   useEffect(() => (remoteClient ? undefined : startRemotePublish()), []);
   const settingsOpen = useKeys((s) => s.overlay?.kind === 'settings');
+  const taskLogOpen = useKeys((s) => s.overlay?.kind === 'taskLog');
   useEffect(() => startSettingsApply(), []);
+  useEffect(() => {
+    // 예약은 PC 앱에서만 돈다 (폰 화면은 미러링)
+    if (remoteClient) return;
+    void loadTasks();
+    void loadRuns();
+    const stopExit = listenRunExit();
+    const stopSched = startScheduler();
+    return () => {
+      stopExit();
+      stopSched();
+    };
+  }, []);
   useEffect(() => void useProviders.getState().load(), []);
   useEffect(() => void useLimits.getState().load(), []);
   useEffect(() => {
@@ -83,12 +100,13 @@ export function App() {
       <div className="app">
         <TitleBar />
         {settingsOpen && <SettingsPage />}
+        {taskLogOpen && <TaskLogPage />}
         {/* 설정 페이지 동안에도 터미널이 살아 있도록 언마운트하지 않고 숨긴다 */}
         <main
           className="main"
           style={{
             ...(stress ? { flexDirection: 'column' } : null),
-            ...(settingsOpen ? { display: 'none' } : null),
+            ...(settingsOpen || taskLogOpen ? { display: 'none' } : null),
           }}
         >
           {stress ? (

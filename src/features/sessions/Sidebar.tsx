@@ -5,6 +5,7 @@ import { leaves } from '../../store/tree';
 import { PROVIDER_META } from '../ai/providers';
 import { useActivity } from '../terminal/activity';
 import { useDetected } from '../terminal/detect';
+import { TasksSection } from '../tasks/TasksSection';
 import { InlineRename } from './InlineRename';
 import { Glyphs } from './TitleTabs';
 import { PROVIDER_GLYPH, createSessionAndRename, useSessionsUi } from './ui';
@@ -220,6 +221,7 @@ export function Sidebar() {
             </div>
           )}
         </section>
+        <TasksSection />
       </aside>
     </>
   );

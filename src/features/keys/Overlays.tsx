@@ -7,6 +7,9 @@ import {
   type LaunchWhere,
 } from '../ai/providers';
 import { PROVIDER_GLYPH } from '../sessions/ui';
+import { startRun } from '../tasks/run';
+import { TaskDialog } from '../tasks/TaskEditor';
+import { useTasks } from '../tasks/tasks';
 import { useStore } from '../../store/store';
 import { TreeOverlay } from '../sessions/TreeOverlay';
 import { HELP_ROWS, prefixLabel } from './keymap';
@@ -131,6 +134,59 @@ function PaletteOverlay() {
   );
 }
 
+const KIND_LABEL = { command: '명령', script: '스크립트', ai: 'AI' } as const;
+
+function TasksOverlay() {
+  const close = useKeys((s) => s.closeOverlay);
+  const tasks = useTasks((s) => s.tasks);
+  const [message, setMessage] = useState<string | null>(null);
+
+  const run = (i: number) => {
+    const task = useTasks.getState().tasks[i];
+    if (!task) return;
+    void startRun(task, 'manual').then((err) => (err ? setMessage(err) : close()));
+  };
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      e.stopPropagation();
+      e.preventDefault();
+      if (e.key === 'Escape') return close();
+      const digit = /^Digit([1-9])$/.exec(e.code);
+      if (digit) run(Number(digit[1]) - 1);
+    };
+    (document.activeElement as HTMLElement | null)?.blur();
+    window.addEventListener('keydown', onKey, true);
+    return () => window.removeEventListener('keydown', onKey, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [close]);
+
+  return (
+    <div className="overlay" onMouseDown={close}>
+      <div className="overlay-box small" onMouseDown={(e) => e.stopPropagation()}>
+        <h2>자동 작업 실행</h2>
+        {tasks.length === 0 ? (
+          <p className="muted">저장된 작업이 없습니다 — 사이드바 자동 작업의 +로 등록하세요</p>
+        ) : (
+          <ul className="pal-list">
+            {tasks.slice(0, 9).map((t, i) => (
+              <li key={t.id}>
+                <button type="button" onClick={() => run(i)}>
+                  <kbd>{i + 1}</kbd>
+                  <span>{t.name}</span>
+                  <span className="muted">{KIND_LABEL[t.kind.type]}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+        {message && <p className="pal-msg">{message}</p>}
+        <p className="muted">백그라운드로 실행하고 기록에 남겨요 · 숫자로 실행 · Esc 닫기</p>
+      </div>
+    </div>
+  );
+}
+
 function RenameOverlay({
   target,
   id,
@@ -176,6 +232,8 @@ export function Overlays() {
       {overlay?.kind === 'help' && <HelpOverlay />}
       {overlay?.kind === 'tree' && <TreeOverlay />}
       {overlay?.kind === 'palette' && <PaletteOverlay />}
+      {overlay?.kind === 'tasks' && <TasksOverlay />}
+      {overlay?.kind === 'taskEdit' && <TaskDialog key={overlay.id ?? 'new'} id={overlay.id} />}
       {overlay?.kind === 'rename' && (
         <RenameOverlay
           key={overlay.id}

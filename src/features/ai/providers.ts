@@ -33,6 +33,8 @@ export interface ProviderMeta {
   skipPermissionsArgs: string[];
   /** 기본 인자. 모델 · 이어하기 등 사용자 인자는 설정의 providerArgs. */
   args: string[];
+  /** 비대화형 실행(자동 작업): 하위 명령 · 프롬프트 플래그. 프롬프트가 마지막 인자가 된다. */
+  headless: { pre: string[]; promptFlag: string[] };
 }
 
 export const PROVIDER_ORDER: ProviderId[] = ['claude', 'codex', 'antigravity'];
@@ -44,6 +46,7 @@ export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
     apiKeyEnv: ['ANTHROPIC_API_KEY'],
     skipPermissionsArgs: ['--dangerously-skip-permissions'],
     args: [],
+    headless: { pre: [], promptFlag: ['-p'] },
   },
   codex: {
     name: 'Codex',
@@ -51,6 +54,8 @@ export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
     apiKeyEnv: ['OPENAI_API_KEY'],
     skipPermissionsArgs: ['--dangerously-bypass-approvals-and-sandbox'],
     args: [],
+    // 미설치라 미검증 — `codex exec <프롬프트>`가 공식 비대화형 실행
+    headless: { pre: ['exec'], promptFlag: [] },
   },
   antigravity: {
     name: 'Antigravity',
@@ -58,6 +63,7 @@ export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
     apiKeyEnv: ['GEMINI_API_KEY', 'GOOGLE_API_KEY'],
     skipPermissionsArgs: ['--dangerously-skip-permissions'],
     args: [],
+    headless: { pre: [], promptFlag: ['-p'] },
   },
 };
 
@@ -87,33 +93,74 @@ export const useProviders = create<ProvidersState>()((set) => ({
 
 export type LaunchWhere = 'row' | 'col' | 'tab';
 
-/** AI CLI를 새 pane으로 연다. 실패하면 사용자에게 보여줄 안내 문장을 돌려준다. */
-export function launchAgent(provider: ProviderId, where: LaunchWhere): string | null {
+/** 포커스 pane의 현재 폴더: OSC 7로 알게 된 폴더 > pane의 시작 폴더 */
+export function inheritedCwd(): string {
+  const from = focusedPane(useStore.getState());
+  return (from && getPaneCwd(from.id)) ?? from?.cwd ?? '';
+}
+
+/** 설치된 provider의 감지 결과. 미설치면 사용자에게 보여줄 안내 문장. */
+function installedStatus(provider: ProviderId): ProviderStatus | string {
   const meta = PROVIDER_META[provider];
   const status = useProviders.getState().statuses.find((s) => s.id === provider);
-  if (!status?.installed) {
-    return status?.installHint
-      ? `${meta.name}이(가) 설치되어 있지 않습니다 — ${status.installHint}`
-      : `${meta.name}이(가) 설치되어 있지 않습니다`;
-  }
+  if (status?.installed) return status;
+  return status?.installHint
+    ? `${meta.name}이(가) 설치되어 있지 않습니다 — ${status.installHint}`
+    : `${meta.name}이(가) 설치되어 있지 않습니다`;
+}
+
+/** 공통 인자: 권한 생략 · provider 기본 인자 · 설정의 추가 인자 */
+function baseArgs(provider: ProviderId): string[] {
+  const meta = PROVIDER_META[provider];
   const { skipPermissions, providerArgs } = useSettings.getState().settings;
-  const state = useStore.getState();
-  const from = focusedPane(state);
-  const pane: PaneSpec = {
+  return [
+    ...(skipPermissions ? meta.skipPermissionsArgs : []),
+    ...meta.args,
+    ...splitArgs(providerArgs[provider]),
+  ];
+}
+
+/**
+ * 자동 작업용 비대화형 실행 명령 (M6-03). 공식 CLI의 `-p` / `exec` 플래그만 쓴다.
+ * 구독 전용 설정이면 API 키 환경변수를 지운다.
+ */
+export function buildAgentHeadless(
+  provider: ProviderId,
+  prompt: string,
+): { command: string; args: string[]; envRemove?: string[] } | string {
+  const status = installedStatus(provider);
+  if (typeof status === 'string') return status;
+  const meta = PROVIDER_META[provider];
+  const { subscriptionOnly } = useSettings.getState().settings;
+  return {
+    command: status.binPath ?? meta.bin,
+    args: [...meta.headless.pre, ...baseArgs(provider), ...meta.headless.promptFlag, prompt],
+    envRemove: subscriptionOnly ? meta.apiKeyEnv : undefined,
+  };
+}
+
+/** AI CLI를 띄울 pane 스펙. 설치되어 있지 않으면 사용자에게 보여줄 안내 문장을 돌려준다. */
+export function buildAgentPane(provider: ProviderId): PaneSpec | string {
+  const meta = PROVIDER_META[provider];
+  const status = installedStatus(provider);
+  if (typeof status === 'string') return status;
+  const from = focusedPane(useStore.getState());
+  return {
     id: uid('p'),
     kind: 'agent',
     provider,
     profileId: from?.profileId ?? 'pwsh',
     command: status.binPath ?? meta.bin,
-    args: [
-      ...(skipPermissions ? meta.skipPermissionsArgs : []),
-      ...meta.args,
-      ...splitArgs(providerArgs[provider]),
-    ],
-    // OSC 7로 알게 된 현재 폴더 > pane의 시작 폴더
-    cwd: (from && getPaneCwd(from.id)) ?? from?.cwd ?? '',
+    args: baseArgs(provider),
+    cwd: inheritedCwd(),
     title: meta.name,
   };
-  state.openPane(where, pane);
+}
+
+/** AI CLI를 새 pane으로 연다. 실패하면 사용자에게 보여줄 안내 문장을 돌려준다. */
+export function launchAgent(provider: ProviderId, where: LaunchWhere): string | null {
+  const pane = buildAgentPane(provider);
+  if (typeof pane === 'string') return pane;
+  useStore.getState().openPane(where, pane);
   return null;
 }

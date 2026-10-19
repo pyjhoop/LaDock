@@ -1,4 +1,5 @@
-//! 레이아웃 저장 파일(`%APPDATA%\LaDock\state.json`)과 설정 파일(`settings.json`) 입출력.
+//! 레이아웃 저장 파일(`%APPDATA%\LaDock\state.json`), 설정 파일(`settings.json`),
+//! 자동 작업 파일(`tasks.json`) 입출력.
 //! 내용 검증 · 마이그레이션은 프론트(`features/persist`, `features/settings`)가 하고,
 //! 여기서는 파일만 안전하게 다룬다.
 
@@ -10,6 +11,8 @@ use crate::limits::app_dir;
 
 const FILE: &str = "state.json";
 const SETTINGS_FILE: &str = "settings.json";
+const TASKS_FILE: &str = "tasks.json";
+const HISTORY_FILE: &str = "task-history.json";
 
 fn state_path() -> Result<PathBuf, String> {
     Ok(app_dir().ok_or("APPDATA 없음")?.join(FILE))
@@ -77,6 +80,36 @@ pub fn settings_load() -> Result<Option<String>, String> {
 #[tauri::command]
 pub fn settings_save(json: String) -> Result<(), String> {
     write_atomic(&settings_path()?, &json)
+}
+
+fn tasks_path() -> Result<PathBuf, String> {
+    Ok(app_dir().ok_or("APPDATA 없음")?.join(TASKS_FILE))
+}
+
+/// 저장된 자동 작업 원문. 파일이 없으면 `None`.
+#[tauri::command]
+pub fn tasks_load() -> Result<Option<String>, String> {
+    read_state(&tasks_path()?)
+}
+
+#[tauri::command]
+pub fn tasks_save(json: String) -> Result<(), String> {
+    write_atomic(&tasks_path()?, &json)
+}
+
+fn history_path() -> Result<PathBuf, String> {
+    Ok(app_dir().ok_or("APPDATA 없음")?.join(HISTORY_FILE))
+}
+
+/// 자동 작업 실행 기록 원문. 파일이 없으면 `None`.
+#[tauri::command]
+pub fn task_history_load() -> Result<Option<String>, String> {
+    read_state(&history_path()?)
+}
+
+#[tauri::command]
+pub fn task_history_save(json: String) -> Result<(), String> {
+    write_atomic(&history_path()?, &json)
 }
 
 /// 각 경로가 지금 존재하는 폴더인지.

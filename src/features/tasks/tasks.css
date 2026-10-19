@@ -1,0 +1,379 @@
+.task-card {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+}
+.task-run {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--accent);
+  font-size: 10px;
+  cursor: pointer;
+}
+.task-run:hover {
+  border-color: var(--accent);
+}
+.task-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.task-info .name,
+.task-info .meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.task-info .meta {
+  color: var(--muted);
+  font-size: 11px;
+}
+.task-err {
+  color: var(--t-yellow, #e5a24a);
+}
+.task-editor {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.task-field {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 100%;
+}
+.task-field > span {
+  color: var(--muted);
+  font-size: 11px;
+}
+.task-field input,
+.task-field select,
+.task-field textarea,
+.task-sched input {
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: inherit;
+  font: inherit;
+}
+.task-field textarea {
+  resize: vertical;
+}
+.task-sched {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.task-sched input[type='number'] {
+  width: 80px;
+}
+.task-days {
+  display: flex;
+  gap: 2px;
+}
+.task-days button {
+  width: 28px;
+  padding: 3px 0;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.task-days button.on {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.task-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.task-dialog {
+  width: min(520px, 94vw);
+}
+.task-dialog .task-field input,
+.task-dialog .task-field select,
+.task-dialog .task-field textarea {
+  width: 100%;
+}
+.task-dialog .task-sched input[type='time'] {
+  width: auto;
+}
+.task-dialog .task-sched input[type='number'] {
+  width: 80px;
+}
+.task-dialog .task-check input {
+  width: auto;
+  padding: 0;
+}
+.task-dialog .set-seg button {
+  width: auto;
+}
+.task-dialog .task-days button {
+  width: 28px;
+}
+.task-del {
+  margin-left: auto;
+}
+
+/* 팝업 레이아웃: 그룹 사이 간격, 균등한 선택 버튼, 여유 있는 하단 버튼 */
+.task-dialog .task-editor {
+  align-items: stretch;
+  gap: 14px;
+}
+.task-dialog .set-seg {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 6px;
+}
+.task-dialog .set-seg button {
+  margin-left: 0;
+  padding: 7px 10px;
+}
+.task-dialog .set-seg button + button {
+  margin-left: 0;
+}
+.task-dialog .task-sched {
+  gap: 12px;
+}
+.task-dialog .task-days {
+  gap: 6px;
+}
+.task-dialog .task-days button {
+  width: 32px;
+  padding: 6px 0;
+}
+.task-dialog .set-line {
+  gap: 8px;
+  margin-top: 4px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+.task-dialog .set-line .set-btn {
+  padding: 6px 18px;
+}
+.task-dialog .set-line .set-btn:first-child:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.task-dialog .set-line .set-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.task-dialog .task-del {
+  margin-left: auto;
+}
+
+.task-state {
+  flex-shrink: 0;
+  width: 18px;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  cursor: pointer;
+}
+.task-state.ok {
+  color: var(--t-green, #9ece6a);
+}
+.task-state.failed,
+.task-state.error {
+  color: var(--t-red, #f7768e);
+}
+.task-state.running {
+  color: var(--accent);
+  animation: task-spin 1.2s linear infinite;
+}
+.task-state.stopped {
+  color: var(--muted);
+}
+@keyframes task-spin {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+/* 실행 기록 페이지 */
+.tlog-side {
+  display: flex;
+  flex-direction: column;
+  width: 320px;
+  flex-shrink: 0;
+  min-height: 0;
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+}
+.tlog-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 12px 12px 8px;
+}
+.tlog-head h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.tlog-head .settings-back {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+.tlog-tools {
+  display: flex;
+  gap: 6px;
+  padding: 0 12px 10px;
+}
+.tlog-tools select {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: inherit;
+  font: inherit;
+}
+.tlog-tools .set-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.tlog-list {
+  flex: 1;
+  margin: 0;
+  padding: 0 6px 8px;
+  overflow-y: auto;
+  list-style: none;
+}
+.tlog-list button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 7px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tlog-list button:hover,
+.tlog-list button.on {
+  background: var(--panel-2);
+}
+.tlog-list button.on {
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.tlog-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.tlog-when {
+  flex-shrink: 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+.tlog-empty,
+.tlog-none {
+  padding: 16px 12px;
+  color: var(--muted);
+}
+.tlog-st,
+.tlog-badge {
+  font-weight: 600;
+}
+.tlog-st {
+  width: 14px;
+  text-align: center;
+}
+.tlog-st.ok,
+.tlog-badge.ok {
+  color: var(--t-green, #9ece6a);
+}
+.tlog-st.failed,
+.tlog-st.error,
+.tlog-badge.failed,
+.tlog-badge.error {
+  color: var(--t-red, #f7768e);
+}
+.tlog-st.running,
+.tlog-badge.running {
+  color: var(--accent);
+}
+.tlog-st.stopped,
+.tlog-badge.stopped {
+  color: var(--muted);
+}
+.tlog-main {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+.tlog-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.tlog-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.tlog-title h2 {
+  margin: 0;
+  font-size: 16px;
+}
+.tlog-cmd {
+  margin: 0;
+  padding: 6px 8px;
+  max-height: 90px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  font: 12px var(--mono);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.tlog-log {
+  flex: 1;
+  margin: 0;
+  padding: 12px 20px;
+  overflow: auto;
+  background: var(--bg);
+  font: 12px/1.5 var(--mono);
+  white-space: pre-wrap;
+  word-break: break-all;
+  user-select: text;
+}

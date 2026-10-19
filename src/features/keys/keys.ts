@@ -19,6 +19,9 @@ export type Overlay =
   | { kind: 'help' }
   | { kind: 'tree' }
   | { kind: 'palette' }
+  | { kind: 'tasks' }
+  | { kind: 'taskEdit'; id: string | null }
+  | { kind: 'taskLog' }
   | { kind: 'settings' }
   | { kind: 'rename'; target: 'session' | 'window'; id: string; value: string };
 
@@ -56,6 +59,8 @@ export function runCommand(cmd: Command) {
   switch (cmd.id) {
     case 'palette':
       return keys.openOverlay({ kind: 'palette' });
+    case 'tasks':
+      return keys.openOverlay({ kind: 'tasks' });
     case 'settings':
       return keys.openOverlay({ kind: 'settings' });
     case 'tree':

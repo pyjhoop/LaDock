@@ -49,6 +49,9 @@ LaDock/
 | --- | --- | --- |
 | `%APPDATA%\LaDock\state.json` | 세션 · 탭 · 분할 트리 · pane 스펙 | M3-01 |
 | `%APPDATA%\LaDock\settings.json` | 설정 | M3-02 |
+| `%APPDATA%\LaDock\tasks.json` | 자동 작업 목록 · 예약 · 마지막 실행 시각 | M6-01 |
+| `%APPDATA%\LaDock\task-history.json` | 자동 작업 실행 기록 (`RunRecord[]`, 최근 200건) | M6-03 |
+| `%APPDATA%\LaDock\task-logs\<runId>.log` | 실행 한 번의 출력 로그 | M6-03 |
 | `%APPDATA%\LaDock\limits\claude.json` | statusline 브리지가 쓴 `rate_limits` 스냅샷 | M2-03 |
 | `%APPDATA%\LaDock\backups\` | 사용자 설정 파일을 바꾸기 전 백업 (예: `~/.claude/settings.json`) | M2-03 |
 
@@ -129,6 +132,45 @@ interface LimitStatus {
 }
 ```
 
+// ── 자동 작업 ────────────────────────────────────
+type TaskKind =
+  | { type: 'command'; line: string }                       // 셸에 입력할 한 줄
+  | { type: 'script'; path: string; args: string }          // 파일 경로 + 인자
+  | { type: 'ai'; provider: ProviderId; prompt: string };   // 프롬프트를 위치 인자로
+
+type Schedule =
+  | { type: 'none' }
+  | { type: 'daily'; time: string; days: number[] }         // "HH:MM", 요일 0(일)–6(토), 빈 배열이면 매일
+  | { type: 'interval'; minutes: number };                  // 1 이상
+
+interface Task {
+  id: string;
+  name: string;
+  kind: TaskKind;
+  profileId: string;          // command · script를 돌릴 셸 (pwsh · powershell · cmd · bash)
+  cwd: string;                // 빈 값이면 포커스 pane의 현재 폴더
+  schedule: Schedule;
+  enabled: boolean;           // 예약을 켰는지 (수동 실행은 항상 가능)
+  lastRunAt?: number;         // unix 초
+}
+
+// 자동 작업은 pane이 아니라 **백그라운드 프로세스**(창 없음, stdout+stderr를 로그 파일로)로 실행한다.
+type RunStatus = 'running' | 'ok' | 'failed' | 'stopped' | 'error';
+
+interface RunRecord {
+  id: string;                 // 로그 파일 이름 (task-logs/<id>.log)
+  taskId: string;
+  taskName: string;           // 작업을 지워도 기록은 남도록 이름을 복사해 둔다
+  kind: 'command' | 'script' | 'ai';
+  trigger: 'manual' | 'schedule';
+  summary: string;            // 실행한 내용 (표시용: 명령 한 줄 / 스크립트 / AI 프롬프트 앞부분)
+  startedAt: number;          // unix 초
+  endedAt?: number;
+  status: RunStatus;          // 'error' = 시작 실패 · 앱 종료로 중단
+  exitCode?: number;
+  error?: string;
+}
+
 ## IPC
 
 | 명령 / 이벤트 | 입력 | 출력 | 담당 기능 |
@@ -152,6 +194,14 @@ interface LimitStatus {
 | `dirs_exist` | `{ paths[] }` | `bool[]` | M3-01 |
 | `settings_load` | – | 저장 파일 원문 `string｜null` (검증 · 기본값 채우기는 프론트 `parseSettings`) | M3-02 |
 | `settings_save` | `{ json }` — `Settings` 직렬화, 임시 파일 후 교체 | – | M3-02 |
+| `tasks_load` | – | 저장 파일 원문 `string｜null` (검증은 프론트 `parseTasks`) | M6-01 |
+| `tasks_save` | `{ json }` — `{ version, tasks: Task[] }` 직렬화, 임시 파일 후 교체 | – | M6-01 |
+| `task_run_start` | `{ runId, profileId, command?, args[], cwd?, envRemove? }` — 창 없이 실행, 출력은 `task-logs/<runId>.log`(2MB 상한) | – (시작 실패면 오류) | M6-03 |
+| `task_run_kill` | `{ runId }` — 프로세스 트리 종료 | – | M6-03 |
+| 이벤트 `task://exit` | – | `{ runId, code?, killed }` | M6-03 |
+| `task_log_read` | `{ runId }` | 로그 전문 `string` (없으면 빈 문자열) | M6-03 |
+| `task_log_delete` | `{ runIds[] }` | – | M6-03 |
+| `task_history_load` / `task_history_save` | `{ json }` — `{ version, runs: RunRecord[] }` (최근 200건) | 원문 `string｜null` | M6-03 |
 | `remote_status` | – | `{ enabled, running, url?, error?, clients }` — `url`은 토큰 포함 접속 주소 | M5-01 |
 | `remote_set_enabled` | `{ enabled }` — Tailscale IP에 서버를 열거나 닫는다 | `RemoteStatus` | M5-01 |
 | `remote_set_https` | `{ enabled }` — `tailscale serve --bg --https=8443`로 HTTPS 주소를 열거나 닫는다 (기본 켬) | `RemoteStatus` (`httpsUrl` 추가) | M5-01 |

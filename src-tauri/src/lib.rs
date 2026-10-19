@@ -8,6 +8,7 @@ mod pty;
 mod pty_ipc;
 mod remote;
 mod shells;
+mod task_run;
 #[cfg(test)]
 mod watch_e2e;
 
@@ -86,6 +87,7 @@ pub fn run() {
             }
         })
         .manage(pty_ipc::PtyRegistry::default())
+        .manage(task_run::TaskRuns::default())
         .manage(remote::Hub::default())
         .manage(remote::Remote::default())
         .invoke_handler(tauri::generate_handler![
@@ -111,6 +113,14 @@ pub fn run() {
             persist::dirs_exist,
             persist::settings_load,
             persist::settings_save,
+            persist::tasks_load,
+            persist::tasks_save,
+            persist::task_history_load,
+            persist::task_history_save,
+            task_run::task_run_start,
+            task_run::task_run_kill,
+            task_run::task_log_read,
+            task_run::task_log_delete,
             bridge::claude_bridge_status,
             bridge::claude_bridge_connect,
             bridge::claude_bridge_disconnect
@@ -121,6 +131,7 @@ pub fn run() {
             if let tauri::RunEvent::Exit = event {
                 use tauri::Manager;
                 app.state::<pty_ipc::PtyRegistry>().kill_all();
+                app.state::<task_run::TaskRuns>().kill_all();
                 app.state::<remote::Remote>()
                     .shutdown(&app.state::<remote::Hub>());
             }
