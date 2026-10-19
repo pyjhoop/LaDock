@@ -1,6 +1,7 @@
 mod agent_detect;
 mod bridge;
 mod limits;
+mod notify;
 mod persist;
 mod providers;
 mod pty;
@@ -16,7 +17,7 @@ pub fn run_bridge_cli() -> i32 {
     bridge::run_cli()
 }
 
-fn show_main_window(app: &tauri::AppHandle) {
+pub(crate) fn show_main_window(app: &tauri::AppHandle) {
     use tauri::Manager;
     if let Some(w) = app.get_webview_window("main") {
         let _ = w.unminimize();
@@ -90,6 +91,7 @@ pub fn run() {
             pty_ipc::pty_kill,
             pty_ipc::pty_ack,
             pty_ipc::pty_detect_agents,
+            notify::notify_agent_done,
             shells::shells_detect,
             providers::providers_detect,
             limits::limits_get,

@@ -7,6 +7,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import '@xterm/xterm/css/xterm.css';
 import { IconClose, IconSplitD, IconSplitR, IconUnzoom, IconZoom } from '../../components/icons';
+import { clearActivity, noteFocus, noteInput, noteOutput } from './activity';
 import { onPtyExit, ptyAck, ptyKill, ptyResize, ptySpawn, ptyWrite, type SpawnArgs } from './pty';
 import { clearPaneCwd, parseOsc7, registerPty, setPaneCwd, unregisterPty } from './registry';
 import { readTerminalTheme, watchTheme } from './theme';
@@ -149,6 +150,7 @@ export function TerminalPane({
       const pending: Uint8Array[] = [];
       const write = (pid: number, data: Uint8Array) => {
         markActive();
+        if (paneKey) noteOutput(paneKey);
         term.write(data, () => void ptyAck(pid, data.length).catch(() => {}));
       };
       const handle = (data: Uint8Array) => {
@@ -202,6 +204,7 @@ export function TerminalPane({
         else if (s === 'x') onCloseRef.current?.();
         return;
       }
+      if (paneKey) noteInput(paneKey, s);
       if (paneId !== null) void ptyWrite(paneId, encoder.encode(s)).catch(() => {});
     });
     term.onBinary((s) => {
@@ -297,7 +300,10 @@ export function TerminalPane({
 
   useEffect(() => {
     if (focused) termRef.current?.focus();
-  }, [focused]);
+    if (paneKey) noteFocus(paneKey, focused);
+  }, [focused, paneKey]);
+
+  useEffect(() => () => (paneKey ? clearActivity(paneKey) : undefined), [paneKey]);
 
   return (
     <section className={`pane${focused ? ' focused' : ''}`} onMouseDownCapture={() => onFocus?.()}>

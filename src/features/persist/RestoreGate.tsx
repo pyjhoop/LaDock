@@ -1,5 +1,6 @@
 import { useEffect, type ReactNode } from 'react';
 import { startAgentDetect } from '../terminal/detect';
+import { startNotify } from '../terminal/notify';
 import { loadSaved, startAutoSave, useRestore } from './persist';
 import './persist.css';
 
@@ -12,6 +13,7 @@ export function RestoreGate({ children }: { children: ReactNode }) {
   useEffect(() => void loadSaved(), []);
   useEffect(() => (phase === 'ready' ? startAutoSave() : undefined), [phase]);
   useEffect(() => (phase === 'ready' ? startAgentDetect() : undefined), [phase]);
+  useEffect(() => (phase === 'ready' ? startNotify() : undefined), [phase]);
 
   if (phase === 'loading') return null;
   return (

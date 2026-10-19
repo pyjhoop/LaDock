@@ -1,24 +1,50 @@
-import { useEffect, type MouseEvent } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { windowLabel } from '../../store/ops';
 import { useStore } from '../../store/store';
 import { leaves } from '../../store/tree';
+import { PROVIDER_META } from '../ai/providers';
+import { useActivity } from '../terminal/activity';
+import { useDetected } from '../terminal/detect';
 import { InlineRename } from './InlineRename';
-import { shellGlyph, useShells } from './shells';
 import { Glyphs } from './TitleTabs';
-import { createSessionAndRename, useSessionsUi } from './ui';
+import { PROVIDER_GLYPH, createSessionAndRename, useSessionsUi } from './ui';
 
-/** 활성 세션만 펼쳐서 탭 목록을 보여주는 세션 트리 */
+const STATE_LABEL = { working: '작업 중', done: '완료', idle: '대기' } as const;
+
+/** 세션 카드 목록(접고 펼침)과 실행 중인 에이전트 카드 목록 */
 export function Sidebar() {
   const state = useStore();
   const mode = useSessionsUi((s) => s.mode);
   const drawer = mode !== 'wide';
   const open = useSessionsUi((s) => (s.mode === 'wide' ? s.sidebarOpen : s.drawerOpen));
   const renaming = useSessionsUi((s) => s.renaming);
-  const shells = useShells((s) => s.profiles);
-  useEffect(() => {
-    void useShells.getState().load();
-  }, []);
+  const detected = useDetected((s) => s.byPane);
+  const activity = useActivity((s) => s.byPane);
+  // 세션 카드 펼침 여부(없으면 활성 세션만 펼침) · 섹션 접힘 여부
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [folded, setFolded] = useState({ sessions: false, agents: false });
   if (!open) return null;
+  const agents = state.sessions.flatMap((sess) =>
+    sess.windows.flatMap((w) =>
+      leaves(w.root).flatMap((paneId) => {
+        const pane = state.panes[paneId];
+        const provider = pane && (pane.kind === 'agent' ? pane.provider : detected[pane.id]);
+        return provider
+          ? [
+              {
+                paneId,
+                provider,
+                cwd: pane.cwd,
+                sessionId: sess.id,
+                sessionName: sess.name,
+                windowId: w.id,
+                windowName: windowLabel(state, w),
+              },
+            ]
+          : [];
+      }),
+    ),
+  );
   const { renameSession, renameWindow } = state;
   const { startRename, stopRename, closeDrawer } = useSessionsUi.getState();
   // 드로어에서는 세션 · 탭을 고르면 닫는다
@@ -39,110 +65,161 @@ export function Sidebar() {
   });
   const isRenaming = (target: 'session' | 'window', id: string) =>
     renaming?.from === 'side' && renaming.target === target && renaming.id === id;
+  const fold = (k: 'sessions' | 'agents') => setFolded((f) => ({ ...f, [k]: !f[k] }));
 
   return (
     <>
       {drawer && <div className="scrim" onMouseDown={closeDrawer} />}
       <aside className={`sidebar${drawer ? ' drawer' : ''}`}>
-        <div className="sec-head">
-          <h3>세션 · {state.sessions.length}</h3>
-          <button
-            className="icon-btn"
-            onClick={createSessionAndRename}
-            title="새 세션 (Ctrl+B C)"
-            aria-label="새 세션"
-          >
-            +
-          </button>
-        </div>
-        <div className="tree">
-          {state.sessions.map((sess) => {
-            const active = sess.id === state.activeSessionId;
-            const paneIds = sess.windows.flatMap((w) => leaves(w.root));
-            return (
-              <div key={sess.id}>
-                {isRenaming('session', sess.id) ? (
-                  <InlineRename
-                    value={sess.name}
-                    onDone={(text) => {
-                      if (text !== null) renameSession(sess.id, text);
-                      stopRename();
-                    }}
-                  />
-                ) : (
-                  <button
-                    className={`t-sess${active ? ' active' : ''}`}
-                    onClick={() => selectSession(sess.id)}
-                    {...renameProps('session', sess.id)}
+        <section className="sb-sec">
+          <div className="sec-head">
+            <button
+              className="sec-toggle"
+              onClick={() => fold('sessions')}
+              aria-expanded={!folded.sessions}
+            >
+              <span className={`chev${folded.sessions ? '' : ' open'}`}>▸</span>
+              <h3>세션</h3>
+              <span className="count">{state.sessions.length}</span>
+            </button>
+            <button
+              className="icon-btn"
+              onClick={createSessionAndRename}
+              title="새 세션 (Ctrl+B C)"
+              aria-label="새 세션"
+            >
+              +
+            </button>
+          </div>
+          {!folded.sessions && (
+            <div className="cards">
+              {state.sessions.map((sess) => {
+                const active = sess.id === state.activeSessionId;
+                const isOpen = expanded[sess.id] ?? active;
+                const paneIds = sess.windows.flatMap((w) => leaves(w.root));
+                return (
+                  <div
+                    key={sess.id}
+                    className={`card${active ? ' active' : ''}`}
+                    style={{ ['--sc' as string]: sess.color }}
                   >
-                    <span className="chev">▸</span>
-                    <span className="sdot" style={{ ['--sc' as string]: sess.color }} />
-                    <span className="name">{sess.name}</span>
-                    <span className="meta">
-                      <Glyphs panes={paneIds.map((id) => state.panes[id])} />
-                      <span>{sess.windows.length}탭</span>
-                    </span>
-                  </button>
-                )}
-                {active && (
-                  <div className="t-wins">
-                    {sess.windows.map((w, i) =>
-                      isRenaming('window', w.id) ? (
-                        <InlineRename
-                          key={w.id}
-                          value={windowLabel(state, w)}
-                          placeholder="비우면 자동 이름"
-                          onDone={(text) => {
-                            if (text !== null) renameWindow(w.id, text);
-                            stopRename();
-                          }}
-                        />
-                      ) : (
+                    {isRenaming('session', sess.id) ? (
+                      <InlineRename
+                        value={sess.name}
+                        onDone={(text) => {
+                          if (text !== null) renameSession(sess.id, text);
+                          stopRename();
+                        }}
+                      />
+                    ) : (
+                      <div className="card-head">
                         <button
-                          key={w.id}
-                          className={`t-win${w.id === sess.activeWindowId ? ' active' : ''}`}
-                          onClick={() => selectWindow(w.id)}
-                          {...renameProps('window', w.id)}
+                          className="card-main"
+                          onClick={() => selectSession(sess.id)}
+                          {...renameProps('session', sess.id)}
                         >
-                          <span className="num">{i + 1}</span>
-                          <span className="name">{windowLabel(state, w)}</span>
+                          <span className="sdot" />
+                          <span className="name">{sess.name}</span>
                           <span className="meta">
-                            <Glyphs panes={leaves(w.root).map((id) => state.panes[id])} />
-                            <span>{leaves(w.root).length}p</span>
+                            <Glyphs panes={paneIds.map((id) => state.panes[id])} />
+                            <span>{sess.windows.length}탭</span>
                           </span>
                         </button>
-                      ),
+                        <button
+                          className="card-fold"
+                          aria-label={isOpen ? '접기' : '펼치기'}
+                          onClick={() => setExpanded((e) => ({ ...e, [sess.id]: !isOpen }))}
+                        >
+                          <span className={`chev${isOpen ? ' open' : ''}`}>▸</span>
+                        </button>
+                      </div>
+                    )}
+                    {isOpen && (
+                      <div className="card-body">
+                        {sess.windows.map((w, i) =>
+                          isRenaming('window', w.id) ? (
+                            <InlineRename
+                              key={w.id}
+                              value={windowLabel(state, w)}
+                              placeholder="비우면 자동 이름"
+                              onDone={(text) => {
+                                if (text !== null) renameWindow(w.id, text);
+                                stopRename();
+                              }}
+                            />
+                          ) : (
+                            <button
+                              key={w.id}
+                              className={`t-win${active && w.id === sess.activeWindowId ? ' active' : ''}`}
+                              onClick={() => {
+                                state.selectSession(sess.id);
+                                selectWindow(w.id);
+                              }}
+                              {...renameProps('window', w.id)}
+                            >
+                              <span className="num">{i + 1}</span>
+                              <span className="name">{windowLabel(state, w)}</span>
+                              <span className="meta">
+                                <Glyphs panes={leaves(w.root).map((id) => state.panes[id])} />
+                                <span>{leaves(w.root).length}p</span>
+                              </span>
+                            </button>
+                          ),
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        {shells.length > 0 && (
-          <div>
-            <div className="sec-head">
-              <h3>셸 프로필 · {shells.length}</h3>
+                );
+              })}
             </div>
-            <div className="tree">
-              {shells.map((p) => (
+          )}
+        </section>
+        <section className="sb-sec">
+          <div className="sec-head">
+            <button
+              className="sec-toggle"
+              onClick={() => fold('agents')}
+              aria-expanded={!folded.agents}
+            >
+              <span className={`chev${folded.agents ? '' : ' open'}`}>▸</span>
+              <h3>실행 중 에이전트</h3>
+              <span className="count">{agents.length}</span>
+            </button>
+          </div>
+          {!folded.agents && (
+            <div className="cards">
+              {agents.length === 0 && <p className="agent-empty">실행 중인 에이전트가 없습니다</p>}
+              {agents.map((a) => (
                 <button
-                  key={p.id}
-                  className="t-shell"
-                  title={`${p.path}\n클릭: 포커스된 pane 오른쪽에 새 pane`}
+                  key={a.paneId}
+                  className="card agent-card"
+                  style={{ ['--pc' as string]: PROVIDER_GLYPH[a.provider].color }}
+                  title={a.cwd || undefined}
                   onClick={() => {
-                    state.splitFocused('row', p.id);
+                    state.selectSession(a.sessionId);
+                    state.selectWindow(a.windowId);
+                    state.focusPane(a.paneId);
                     if (drawer) closeDrawer();
                   }}
                 >
-                  <span className="sg">{shellGlyph(p.id)}</span>
-                  <span className="name">{p.name}</span>
-                  {p.isDefault && <span className="def">기본</span>}
+                  <span className="ag">{PROVIDER_GLYPH[a.provider].glyph}</span>
+                  <span className="ag-text">
+                    <span className="ag-name">{PROVIDER_META[a.provider].name}</span>
+                    <span className="ag-where">
+                      {a.sessionName} › {a.windowName}
+                    </span>
+                  </span>
+                  <span
+                    className={`ag-state ${activity[a.paneId] ?? 'idle'}`}
+                    title="출력 흐름으로 추정한 상태"
+                  >
+                    {STATE_LABEL[activity[a.paneId] ?? 'idle']}
+                  </span>
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </section>
       </aside>
     </>
   );
