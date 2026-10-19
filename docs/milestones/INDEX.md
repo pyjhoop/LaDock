@@ -29,7 +29,7 @@
 | ID | 기능 | 의존 | 상태 |
 | --- | --- | --- | --- |
 | [M2-01](M2-01-provider-detect.md) | AI 구독 감지 (4개 provider, 토큰 비노출) | M0-01 | 🟨 |
-| [M2-02](M2-02-ai-launch.md) | AI 실행 · 실행 팔레트 (구독으로만 실행, cwd 상속) | M2-01, M1-03 | ⬜ |
+| [M2-02](M2-02-ai-launch.md) | AI 실행 · 실행 팔레트 (구독으로만 실행, cwd 상속) | M2-01, M1-03 | ✅ |
 | [M2-03](M2-03-claude-limit-bridge.md) | Claude 한도 — statusline 브리지 (5시간 · 주간) | M0-01 | 🟨 |
 | [M2-04](M2-04-other-limits.md) | Gemini 일일 추정 · agy/Codex 한도 | M2-01 | 🟨 |
 | [M2-05](M2-05-limit-popover.md) | 상태바 한도 표시 · 팝오버 | M1-05, M2-01, M2-03, M2-04 | ⬜ |
