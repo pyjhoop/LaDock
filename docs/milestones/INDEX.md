@@ -12,7 +12,7 @@
 | --- | --- | --- | --- |
 | [M0-01](M0-01-project-setup.md) | 프로젝트 셋업 (Tauri + React, 커스텀 타이틀바, lint/test) | – | ✅ |
 | [M0-02](M0-02-pty-backend.md) | PTY 백엔드 (ConPTY, `pty_*` IPC, 출력 배칭) | M0-01 | ✅ |
-| [M0-03](M0-03-terminal-pane.md) | 터미널 pane (xterm.js, 리사이즈, 복붙) | M0-02 | ⬜ |
+| [M0-03](M0-03-terminal-pane.md) | 터미널 pane (xterm.js, 리사이즈, 복붙) | M0-02 | 🟨 |
 | [M0-04](M0-04-ime-renderer-check.md) | 한글 IME · 렌더러 검증 (리스크 선검증) | M0-03 | ⬜ |
 
 ### M1 세션·탭·pane — psmux처럼 키보드로 전부 조작

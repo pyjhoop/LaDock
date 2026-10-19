@@ -32,9 +32,8 @@ svg {
   grid-template-rows: 40px minmax(0, 1fr);
 }
 .main {
-  display: grid;
-  place-items: center;
-  color: var(--muted);
+  min-height: 0;
+  min-width: 0;
 }
 
 .titlebar {

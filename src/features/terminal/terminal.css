@@ -1,0 +1,72 @@
+.pane {
+  display: grid;
+  grid-template-rows: 28px minmax(0, 1fr);
+  height: 100%;
+  min-width: 0;
+  background: var(--term-bg);
+  container-type: inline-size;
+}
+.pane-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  min-width: 0;
+  user-select: none;
+}
+.pane-icon {
+  font-family: var(--mono);
+  color: var(--accent);
+}
+.pane-title {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.pane-cwd {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.pane-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--off);
+  flex: none;
+}
+.pane-dot.on {
+  background: var(--ok);
+}
+.pane-dot.dead {
+  background: var(--danger);
+}
+.pane-actions button {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  color: var(--muted);
+}
+.pane-actions button:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+.pane-body {
+  min-height: 0;
+  min-width: 0;
+  padding: 4px 0 0 6px;
+  overflow: hidden;
+}
+.pane-body .xterm {
+  height: 100%;
+}
+@container (max-width: 360px) {
+  .pane-cwd {
+    display: none;
+  }
+}
