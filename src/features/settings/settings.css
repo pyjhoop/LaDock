@@ -1,6 +1,69 @@
-.overlay-box.settings {
-  width: min(560px, 94vw);
+.settings-page {
+  display: flex;
+  flex: 1;
+  min-height: 0;
   outline: none;
+  background: var(--bg);
+}
+.settings-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 200px;
+  flex-shrink: 0;
+  padding: 12px 8px;
+  border-right: 1px solid var(--border);
+  background: var(--panel);
+}
+.settings-nav button {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.settings-nav button:hover {
+  background: var(--panel-2);
+}
+.settings-nav button.on {
+  background: var(--panel-2);
+  color: var(--accent);
+}
+.settings-nav .settings-back {
+  margin-bottom: 8px;
+  color: var(--muted);
+}
+.settings-content {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
+.settings-inner {
+  max-width: 640px;
+  padding: 24px 32px 48px;
+}
+.settings-inner h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+.settings-inner .muted {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.set-url {
+  margin: 4px 0;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  font-family: var(--mono);
+  font-size: 11px;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 .settings h3 {
   margin: 14px 0 4px;

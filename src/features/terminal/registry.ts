@@ -3,10 +3,25 @@ import { ptyKill, ptyWrite } from './pty';
 // store pane id → PTY id. TerminalPane이 spawn 직후 등록하고, store가 pane을 지울 때 kill한다.
 const ptys = new Map<string, number>();
 
-export const registerPty = (paneKey: string, ptyId: number) => void ptys.set(paneKey, ptyId);
+const listeners = new Set<() => void>();
+
+/** PTY 등록이 바뀔 때 알린다 (모바일 원격 레이아웃 발행용). 해제 함수를 돌려준다. */
+export const onPtyChange = (fn: () => void) => {
+  listeners.add(fn);
+  return () => void listeners.delete(fn);
+};
+const changed = () => listeners.forEach((fn) => fn());
+
+export const registerPty = (paneKey: string, ptyId: number) => {
+  ptys.set(paneKey, ptyId);
+  changed();
+};
 
 export const unregisterPty = (paneKey: string, ptyId: number) => {
-  if (ptys.get(paneKey) === ptyId) ptys.delete(paneKey);
+  if (ptys.get(paneKey) === ptyId) {
+    ptys.delete(paneKey);
+    changed();
+  }
 };
 
 /** (store pane id, PTY id) 목록 */
@@ -16,6 +31,7 @@ export function killPanePty(paneKey: string) {
   const id = ptys.get(paneKey);
   if (id === undefined) return;
   ptys.delete(paneKey);
+  changed();
   void ptyKill(id).catch(() => {});
 }
 

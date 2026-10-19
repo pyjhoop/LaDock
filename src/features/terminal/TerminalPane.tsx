@@ -9,6 +9,7 @@ import '@xterm/xterm/css/xterm.css';
 import { IconClose, IconSplitD, IconSplitR, IconUnzoom, IconZoom } from '../../components/icons';
 import { clearActivity, noteFocus, noteInput, noteOutput } from './activity';
 import { onPtyExit, ptyAck, ptyKill, ptyResize, ptySpawn, ptyWrite, type SpawnArgs } from './pty';
+import { remoteClient } from '../remote/client';
 import { clearPaneCwd, parseOsc7, registerPty, setPaneCwd, unregisterPty } from './registry';
 import { readTerminalTheme, watchTheme } from './theme';
 import './terminal.css';
@@ -145,7 +146,32 @@ export function TerminalPane({
       rows: term.rows,
     });
 
+    // 폰: PTY를 새로 만들지 않고 PC가 이미 띄운 PTY에 붙는다. 크기는 PC가 정한다.
+    let detach: (() => void) | undefined;
+    const fitRemoteFont = () => {
+      const px = Math.floor((host.clientWidth - 8) / (term.cols * 0.6));
+      term.options.fontSize = Math.max(5, Math.min(14, px));
+    };
+    const startRemote = async () => {
+      if (!remoteClient || !paneKey) return;
+      const id = await remoteClient.waitPty(paneKey);
+      if (disposed) return;
+      paneId = id;
+      detach = remoteClient.attach(id, {
+        onData: (data) => {
+          markActive();
+          noteOutput(paneKey);
+          term.write(data);
+        },
+        onSize: (cols, rows) => {
+          term.resize(cols, rows);
+          fitRemoteFont();
+        },
+      });
+    };
+
     const start = async () => {
+      if (remoteClient) return startRemote();
       exited = false;
       setExitCode(null);
       let id: number | null = null;
@@ -250,6 +276,7 @@ export function TerminalPane({
 
     // 크기. 분할선 드래그 중에는 PTY 리사이즈를 미루고, 끝나면 REFIT_EVENT로 한 번 맞춘다.
     const refit = () => {
+      if (remoteClient) return fitRemoteFont();
       if (host.clientWidth === 0 || host.clientHeight === 0) return;
       fit.fit();
       if (paneId !== null) void ptyResize(paneId, term.cols, term.rows).catch(() => {});
@@ -282,6 +309,7 @@ export function TerminalPane({
       if (paneKey) clearPaneCwd(paneKey);
       host.removeEventListener('contextmenu', onContext);
       void unlistenExit.then((un) => un());
+      detach?.();
       if (paneId !== null) {
         if (paneKey) unregisterPty(paneKey, paneId);
         void ptyKill(paneId).catch(() => {});

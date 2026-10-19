@@ -4,6 +4,11 @@ import { TitleBar } from '../components/TitleBar';
 import { useProviders } from '../features/ai/providers';
 import { useLimits } from '../features/limits/limits';
 import { Overlays } from '../features/keys/Overlays';
+import { useKeys } from '../features/keys/keys';
+import { SettingsPage } from '../features/settings/SettingsPage';
+import { remoteClient } from '../features/remote/client';
+import { KeyBar, RemoteGate } from '../features/remote/RemoteGate';
+import { startRemotePublish } from '../features/remote/publish';
 import { installKeyHandler } from '../features/keys/keys';
 import { startSettingsApply } from '../features/settings/apply';
 import { UpdateBanner } from '../features/update/UpdateBanner';
@@ -51,12 +56,15 @@ function StressGrid({ count }: { count: number }) {
 }
 
 export function App() {
+  const Gate = remoteClient ? RemoteGate : RestoreGate;
   useEffect(() => installKeyHandler(), []);
+  useEffect(() => (remoteClient ? undefined : startRemotePublish()), []);
+  const settingsOpen = useKeys((s) => s.overlay?.kind === 'settings');
   useEffect(() => startSettingsApply(), []);
   useEffect(() => void useProviders.getState().load(), []);
   useEffect(() => void useLimits.getState().load(), []);
   useEffect(() => {
-    if (!import.meta.env.PROD) return;
+    if (!import.meta.env.PROD || remoteClient) return;
     const t = window.setTimeout(() => void useUpdate.getState().check({ silent: true }), 3000);
     return () => window.clearTimeout(t);
   }, []);
@@ -71,10 +79,18 @@ export function App() {
     return () => window.removeEventListener('resize', onResize);
   }, []);
   return (
-    <RestoreGate>
+    <Gate>
       <div className="app">
         <TitleBar />
-        <main className="main" style={stress ? { flexDirection: 'column' } : undefined}>
+        {settingsOpen && <SettingsPage />}
+        {/* 설정 페이지 동안에도 터미널이 살아 있도록 언마운트하지 않고 숨긴다 */}
+        <main
+          className="main"
+          style={{
+            ...(stress ? { flexDirection: 'column' } : null),
+            ...(settingsOpen ? { display: 'none' } : null),
+          }}
+        >
           {stress ? (
             <StressGrid count={stress} />
           ) : (
@@ -87,10 +103,11 @@ export function App() {
             </>
           )}
         </main>
+        {remoteClient && <KeyBar />}
         <StatusBar />
         <Overlays />
         <UpdateBanner />
       </div>
-    </RestoreGate>
+    </Gate>
   );
 }

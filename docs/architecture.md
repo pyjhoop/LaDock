@@ -152,6 +152,11 @@ interface LimitStatus {
 | `dirs_exist` | `{ paths[] }` | `bool[]` | M3-01 |
 | `settings_load` | – | 저장 파일 원문 `string｜null` (검증 · 기본값 채우기는 프론트 `parseSettings`) | M3-02 |
 | `settings_save` | `{ json }` — `Settings` 직렬화, 임시 파일 후 교체 | – | M3-02 |
+| `remote_status` | – | `{ enabled, running, url?, error?, clients }` — `url`은 토큰 포함 접속 주소 | M5-01 |
+| `remote_set_enabled` | `{ enabled }` — Tailscale IP에 서버를 열거나 닫는다 | `RemoteStatus` | M5-01 |
+| `remote_set_https` | `{ enabled }` — `tailscale serve --bg --https=8443`로 HTTPS 주소를 열거나 닫는다 (기본 켬) | `RemoteStatus` (`httpsUrl` 추가) | M5-01 |
+| `remote_regenerate_token` | – — 연결된 폰을 끊고 이전 주소를 무효화 | `RemoteStatus` | M5-01 |
+| `remote_set_layout` | `{ json }` — 세션 · 탭 · pane 목록(+ PTY id), 폰에 전달 | – | M5-01 |
 
 ## 보안 경계
 

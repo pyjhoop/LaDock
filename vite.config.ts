@@ -17,5 +17,10 @@ export default defineConfig({
     watch: { ignored: ['**/src-tauri/**'] },
   },
 
+  build: {
+    // 데스크톱 앱(index)과 모바일 원격 페이지(mobile)를 같이 빌드한다
+    rollupOptions: { input: { main: 'index.html', mobile: 'mobile.html' } },
+  },
+
   test: { environment: 'node', include: ['src/**/*.test.ts'] },
 });

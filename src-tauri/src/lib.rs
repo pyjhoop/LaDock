@@ -6,6 +6,7 @@ mod persist;
 mod providers;
 mod pty;
 mod pty_ipc;
+mod remote;
 mod shells;
 #[cfg(test)]
 mod watch_e2e;
@@ -73,6 +74,7 @@ pub fn run() {
                 use tauri::Emitter;
                 let _ = app.emit("claude-bridge://changed", &bridge);
             }
+            remote::Remote::start_background(app.handle().clone());
             setup_tray(app)?;
             Ok(())
         })
@@ -84,6 +86,8 @@ pub fn run() {
             }
         })
         .manage(pty_ipc::PtyRegistry::default())
+        .manage(remote::Hub::default())
+        .manage(remote::Remote::default())
         .invoke_handler(tauri::generate_handler![
             pty_ipc::pty_spawn,
             pty_ipc::pty_write,
@@ -91,6 +95,12 @@ pub fn run() {
             pty_ipc::pty_kill,
             pty_ipc::pty_ack,
             pty_ipc::pty_detect_agents,
+            remote::remote_status,
+            remote::remote_set_enabled,
+            remote::remote_set_https,
+            remote::remote_regenerate_token,
+            remote::remote_set_layout,
+            remote::remote_rpc_reply,
             notify::notify_agent_done,
             shells::shells_detect,
             providers::providers_detect,
@@ -111,6 +121,8 @@ pub fn run() {
             if let tauri::RunEvent::Exit = event {
                 use tauri::Manager;
                 app.state::<pty_ipc::PtyRegistry>().kill_all();
+                app.state::<remote::Remote>()
+                    .shutdown(&app.state::<remote::Hub>());
             }
         });
 }

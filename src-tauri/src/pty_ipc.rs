@@ -7,9 +7,10 @@ use std::sync::{Arc, Mutex};
 
 use serde::{Deserialize, Serialize};
 use tauri::ipc::{Channel, InvokeResponseBody};
-use tauri::{AppHandle, Emitter, State};
+use tauri::{AppHandle, Emitter, Manager, State};
 
 use crate::pty::{PaneId, PtyHandle, SpawnOptions};
+use crate::remote::Hub;
 
 #[derive(Default)]
 pub struct PtyRegistry {
@@ -25,6 +26,11 @@ impl PtyRegistry {
             .get(&id)
             .cloned()
             .ok_or_else(|| format!("pane {id} 없음"))
+    }
+
+    /// 모바일 원격 입력용 (이미 닫힌 pane이면 오류).
+    pub fn write(&self, id: PaneId, data: &[u8]) -> Result<(), String> {
+        self.get(id)?.write(data)
     }
 
     /// 앱 종료 시 전부 kill.
@@ -76,15 +82,20 @@ pub fn pty_spawn(
         rows: args.rows,
         env_remove: args.env_remove,
     };
+    let (hub_app, err_app) = (app.clone(), app.clone());
+    app.state::<Hub>().open(pane_id, opts.cols, opts.rows);
     let handle = PtyHandle::spawn(
         opts,
         move |data| {
+            hub_app.state::<Hub>().output(pane_id, &data);
             let _ = on_data.send(InvokeResponseBody::Raw(data));
         },
         move |code| {
+            app.state::<Hub>().exited(pane_id, code);
             let _ = app.emit("pty://exit", ExitEvent { pane_id, code });
         },
-    )?;
+    )
+    .inspect_err(|_| err_app.state::<Hub>().close(pane_id))?;
     registry
         .panes
         .lock()
@@ -105,18 +116,26 @@ pub fn pty_write(
 #[tauri::command]
 pub fn pty_resize(
     registry: State<'_, PtyRegistry>,
+    hub: State<'_, Hub>,
     pane_id: PaneId,
     cols: u16,
     rows: u16,
 ) -> Result<(), String> {
-    registry.get(pane_id)?.resize(cols, rows)
+    registry.get(pane_id)?.resize(cols, rows)?;
+    hub.resized(pane_id, cols, rows);
+    Ok(())
 }
 
 #[tauri::command]
-pub fn pty_kill(registry: State<'_, PtyRegistry>, pane_id: PaneId) -> Result<(), String> {
+pub fn pty_kill(
+    registry: State<'_, PtyRegistry>,
+    hub: State<'_, Hub>,
+    pane_id: PaneId,
+) -> Result<(), String> {
     if let Some(h) = registry.panes.lock().unwrap().remove(&pane_id) {
         h.kill();
     }
+    hub.close(pane_id);
     Ok(())
 }
 
