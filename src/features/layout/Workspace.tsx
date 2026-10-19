@@ -4,6 +4,7 @@ import { useStore } from '../../store/store';
 import { computeLayout, type Divider } from '../../store/tree';
 import type { Window } from '../../store/types';
 import { envRemoveFor } from '../ai/providers';
+import { useSettings } from '../settings/settings';
 import { PROVIDER_GLYPH, useSessionsUi } from '../sessions/ui';
 import './layout.css';
 
@@ -61,6 +62,7 @@ function DividerBar({ windowId, divider }: { windowId: string; divider: Divider 
 
 function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
   const panes = useStore((s) => s.panes);
+  const { fontFamily, fontSize, copyOnSelect } = useSettings((s) => s.settings);
   const { focusPane, splitFocused, closePane, toggleZoom } = useStore.getState();
   const layout = computeLayout(win.root);
   // 스택 모드(<640px)는 줌처럼 포커스 pane 하나만 보인다
@@ -95,6 +97,9 @@ function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
               command={spec.command}
               args={spec.args}
               envRemove={envRemoveFor(spec)}
+              fontFamily={fontFamily}
+              fontSize={fontSize}
+              copyOnSelect={copyOnSelect}
               icon={spec.provider ? PROVIDER_GLYPH[spec.provider] : undefined}
               focused={focused && visible}
               zoomed={win.zoomed}

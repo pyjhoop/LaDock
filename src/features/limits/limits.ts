@@ -92,6 +92,8 @@ interface LimitsState {
   poll: () => Promise<void>;
   refresh: () => Promise<void>;
   connectBridge: () => Promise<string | null>;
+  /** 백업해 둔 원래 statusLine으로 되돌린다. 실패하면 안내 문장을 돌려준다. */
+  disconnectBridge: () => Promise<string | null>;
 }
 
 let listening = false;
@@ -135,6 +137,15 @@ export const useLimits = create<LimitsState>()((set, get) => ({
   connectBridge: async () => {
     try {
       set({ bridge: await invoke<BridgeStatus>('claude_bridge_connect', { confirm: true }) });
+      await get().refresh();
+      return null;
+    } catch (e) {
+      return String(e);
+    }
+  },
+  disconnectBridge: async () => {
+    try {
+      set({ bridge: await invoke<BridgeStatus>('claude_bridge_disconnect') });
       await get().refresh();
       return null;
     } catch (e) {

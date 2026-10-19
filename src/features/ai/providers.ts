@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { focusedPane, uid } from '../../store/ops';
 import { useStore } from '../../store/store';
 import type { PaneSpec, ProviderId } from '../../store/types';
+import { useSettings, splitArgs } from '../settings/settings';
 import { getPaneCwd } from '../terminal/registry';
 
 export type AuthState = 'subscription' | 'api_key' | 'logged_out' | 'unknown';
@@ -30,7 +31,7 @@ export interface ProviderMeta {
   apiKeyEnv: string[];
   /** 권한 확인을 건너뛰는 CLI 플래그 (사용자가 요청한 기본 동작) */
   skipPermissionsArgs: string[];
-  /** 기본 인자. 모델 · 이어하기 등은 설정(M3-02)에서 채운다. */
+  /** 기본 인자. 모델 · 이어하기 등 사용자 인자는 설정의 providerArgs. */
   args: string[];
 }
 
@@ -60,21 +61,9 @@ export const PROVIDER_META: Record<ProviderId, ProviderMeta> = {
   },
 };
 
-/** 권한 확인 없이 실행 — 기본 ON. 설정 화면(M3-02) 전까지 상수. */
-export const SKIP_PERMISSIONS = true;
-
-/** "구독으로만 실행" 기본 ON. 상태바 팝오버에서 바꾸고, 저장은 설정 화면(M3-02)에서. */
-export const useLaunchPrefs = create<{
-  subscriptionOnly: boolean;
-  setSubscriptionOnly: (v: boolean) => void;
-}>()((set) => ({
-  subscriptionOnly: true,
-  setSubscriptionOnly: (subscriptionOnly) => set({ subscriptionOnly }),
-}));
-
 /** 이 pane의 자식 프로세스에서 지울 환경변수 */
 export function envRemoveFor(pane: PaneSpec): string[] | undefined {
-  if (!useLaunchPrefs.getState().subscriptionOnly || pane.kind !== 'agent' || !pane.provider)
+  if (!useSettings.getState().settings.subscriptionOnly || pane.kind !== 'agent' || !pane.provider)
     return undefined;
   return PROVIDER_META[pane.provider].apiKeyEnv;
 }
@@ -107,6 +96,7 @@ export function launchAgent(provider: ProviderId, where: LaunchWhere): string | 
       ? `${meta.name}이(가) 설치되어 있지 않습니다 — ${status.installHint}`
       : `${meta.name}이(가) 설치되어 있지 않습니다`;
   }
+  const { skipPermissions, providerArgs } = useSettings.getState().settings;
   const state = useStore.getState();
   const from = focusedPane(state);
   const pane: PaneSpec = {
@@ -115,7 +105,11 @@ export function launchAgent(provider: ProviderId, where: LaunchWhere): string | 
     provider,
     profileId: from?.profileId ?? 'pwsh',
     command: status.binPath ?? meta.bin,
-    args: [...(SKIP_PERMISSIONS ? meta.skipPermissionsArgs : []), ...meta.args],
+    args: [
+      ...(skipPermissions ? meta.skipPermissionsArgs : []),
+      ...meta.args,
+      ...splitArgs(providerArgs[provider]),
+    ],
     // OSC 7로 알게 된 현재 폴더 > pane의 시작 폴더
     cwd: (from && getPaneCwd(from.id)) ?? from?.cwd ?? '',
     title: meta.name,

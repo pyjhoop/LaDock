@@ -7,7 +7,8 @@ let seq = 0;
 export const uid = (prefix: string) =>
   `${prefix}${Date.now().toString(36)}${(seq++).toString(36)}${Math.random().toString(36).slice(2, 5)}`;
 
-const DEFAULT_PROFILE = 'pwsh';
+/** 새 세션 · 분할의 기본 셸. 설정(M3-02)이 바꾼다. */
+export const defaults = { profile: 'pwsh' };
 
 function newShellPane(profileId: string, cwd: string): PaneSpec {
   return { id: uid('p'), kind: 'shell', profileId, cwd };
@@ -38,7 +39,7 @@ export function createSession(
 }
 
 export function createInitialState(): AppState {
-  const { session, pane } = createSession('main', SESSION_COLORS[0], DEFAULT_PROFILE, '');
+  const { session, pane } = createSession('main', SESSION_COLORS[0], defaults.profile, '');
   return { sessions: [session], activeSessionId: session.id, panes: { [pane.id]: pane } };
 }
 
@@ -102,7 +103,7 @@ const wrap = (i: number, n: number) => ((i % n) + n) % n;
 /** 포커스된 pane에서 cwd · 프로필을 물려받은 새 셸 pane */
 function inheritedPane(s: AppState, profileId?: string): PaneSpec {
   const f = focusedPane(s);
-  return newShellPane(profileId ?? f?.profileId ?? DEFAULT_PROFILE, f?.cwd ?? '');
+  return newShellPane(profileId ?? f?.profileId ?? defaults.profile, f?.cwd ?? '');
 }
 
 // ── pane ─────────────────────────────────────────
@@ -276,7 +277,7 @@ export function newSession(s: AppState, name = `session-${s.sessions.length + 1}
   const { session, pane } = createSession(
     name,
     nextColor(s.sessions),
-    f?.profileId ?? DEFAULT_PROFILE,
+    f?.profileId ?? defaults.profile,
     f?.cwd ?? '',
   );
   return {
@@ -298,7 +299,7 @@ export function closeSession(s: AppState, sessionId: string): AppState {
   const panes = without(s.panes, removed);
   const sessions = s.sessions.filter((x) => x.id !== sessionId);
   if (sessions.length === 0) {
-    const { session, pane } = createSession('main', SESSION_COLORS[0], DEFAULT_PROFILE, '');
+    const { session, pane } = createSession('main', SESSION_COLORS[0], defaults.profile, '');
     return {
       sessions: [session],
       activeSessionId: session.id,

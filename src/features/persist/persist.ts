@@ -1,8 +1,10 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { create } from 'zustand';
+import { createInitialState } from '../../store/ops';
 import { useStore } from '../../store/store';
 import type { AppState } from '../../store/types';
+import { loadSettings } from '../settings/settings';
 import { getPaneCwd } from '../terminal/registry';
 import { agentPanes, applyResume, fixMissingCwds, parseStateFile, snapshotState } from './snapshot';
 
@@ -53,9 +55,11 @@ function commit(state: AppState) {
 /** 시작할 때 한 번: 저장된 상태를 불러온다. 이어하기를 물을 AI pane이 있으면 물어본다. */
 export async function loadSaved(): Promise<void> {
   const ui = useRestore.getState();
+  // 기본 셸 설정이 첫 세션에 반영되도록 설정부터 읽는다
+  await loadSettings();
   try {
     const text = await invoke<string | null>('state_load');
-    if (text === null) return ui.set({ restore: { phase: 'ready' } });
+    if (text === null) return commit(createInitialState());
     const parsed = parseStateFile(text);
     if (!parsed.ok) {
       const backup = await invoke<string | null>('state_quarantine').catch(() => null);

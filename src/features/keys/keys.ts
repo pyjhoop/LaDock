@@ -19,6 +19,7 @@ export type Overlay =
   | { kind: 'help' }
   | { kind: 'tree' }
   | { kind: 'palette' }
+  | { kind: 'settings' }
   | { kind: 'rename'; target: 'session' | 'window'; id: string; value: string };
 
 interface KeysState {
@@ -55,6 +56,8 @@ export function runCommand(cmd: Command) {
   switch (cmd.id) {
     case 'palette':
       return keys.openOverlay({ kind: 'palette' });
+    case 'settings':
+      return keys.openOverlay({ kind: 'settings' });
     case 'tree':
       return keys.openOverlay({ kind: 'tree' });
     case 'help':

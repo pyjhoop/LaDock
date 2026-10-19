@@ -3,10 +3,10 @@ import {
   PROVIDER_META,
   PROVIDER_ORDER,
   launchAgent,
-  useLaunchPrefs,
   useProviders,
   type ProviderStatus,
 } from '../ai/providers';
+import { useSettings } from '../settings/settings';
 import { PROVIDER_GLYPH } from '../sessions/ui';
 import type { ProviderId } from '../../store/types';
 import {
@@ -237,8 +237,8 @@ function Popover({ show, onLaunched }: { show: boolean; onLaunched: () => void }
   const statuses = useProviders((s) => s.statuses);
   const items = useLimits((s) => s.items);
   const refresh = useLimits((s) => s.refresh);
-  const subOnly = useLaunchPrefs((s) => s.subscriptionOnly);
-  const setSubOnly = useLaunchPrefs((s) => s.setSubscriptionOnly);
+  const subOnly = useSettings((s) => s.settings.subscriptionOnly);
+  const setSubOnly = (v: boolean) => useSettings.getState().update({ subscriptionOnly: v });
   const now = useNowSec(show);
   const [notice, setNotice] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

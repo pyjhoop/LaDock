@@ -5,6 +5,7 @@ import { useProviders } from '../features/ai/providers';
 import { useLimits } from '../features/limits/limits';
 import { Overlays } from '../features/keys/Overlays';
 import { installKeyHandler } from '../features/keys/keys';
+import { startSettingsApply } from '../features/settings/apply';
 import { RestoreGate } from '../features/persist/RestoreGate';
 import { PaneChips } from '../features/layout/PaneChips';
 import { Workspace } from '../features/layout/Workspace';
@@ -49,6 +50,7 @@ function StressGrid({ count }: { count: number }) {
 
 export function App() {
   useEffect(() => installKeyHandler(), []);
+  useEffect(() => startSettingsApply(), []);
   useEffect(() => void useProviders.getState().load(), []);
   useEffect(() => void useLimits.getState().load(), []);
   const narrow = useSessionsUi((s) => s.mode === 'narrow');

@@ -150,7 +150,8 @@ interface LimitStatus {
 | `state_save` | `{ json }` — `{ version, state: AppState }` 직렬화, 임시 파일 후 교체 | – | M3-01 |
 | `state_quarantine` | – | 읽을 수 없는 `state.json`을 `state.corrupt-<초>.json`으로 옮기고 그 경로 | M3-01 |
 | `dirs_exist` | `{ paths[] }` | `bool[]` | M3-01 |
-| `settings_load` / `settings_save` | `Settings` | `Settings` | M3-02 |
+| `settings_load` | – | 저장 파일 원문 `string｜null` (검증 · 기본값 채우기는 프론트 `parseSettings`) | M3-02 |
+| `settings_save` | `{ json }` — `Settings` 직렬화, 임시 파일 후 교체 | – | M3-02 |
 
 ## 보안 경계
 

@@ -1,0 +1,126 @@
+.overlay-box.settings {
+  width: min(560px, 94vw);
+  outline: none;
+}
+.settings h3 {
+  margin: 14px 0 4px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.set-row {
+  display: grid;
+  grid-template-columns: 1fr minmax(0, 250px);
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+}
+.set-label small,
+.set-ctl small,
+.set-block small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+}
+.set-ctl {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+}
+.set-ctl input,
+.set-ctl select {
+  width: 100%;
+  padding: 4px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: inherit;
+  font: inherit;
+}
+.set-btn,
+.set-toggle,
+.set-seg button,
+.set-stepper button {
+  padding: 3px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+.set-btn.on,
+.set-toggle.on,
+.set-seg button.on,
+.set-btn.primary {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.set-stepper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.set-stepper button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.set-seg {
+  display: flex;
+}
+.set-seg button + button {
+  margin-left: -1px;
+}
+.set-warn {
+  color: var(--t-yellow, #e5a24a) !important;
+}
+.set-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 0;
+}
+.set-line {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.set-state.ok {
+  color: var(--accent);
+}
+.set-confirm,
+.set-snippet {
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--panel-2);
+}
+.set-confirm p,
+.set-snippet p {
+  margin: 0 0 6px;
+}
+.set-confirm .set-btn + .set-btn {
+  margin-left: 6px;
+}
+.set-snippet pre {
+  margin: 0 0 6px;
+  padding: 6px;
+  max-height: 110px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  font: 11px var(--mono);
+}
+.set-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--accent);
+  font: inherit;
+  cursor: pointer;
+}

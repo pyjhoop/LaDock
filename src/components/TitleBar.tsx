@@ -1,6 +1,7 @@
-import { useState } from 'react';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { applyTheme, loadTheme, nextTheme, type ThemeMode } from '../app/theme';
+import { nextTheme, type ThemeMode } from '../app/theme';
+import { useKeys } from '../features/keys/keys';
+import { useSettings } from '../features/settings/settings';
 
 import { TitleTabs } from '../features/sessions/TitleTabs';
 import { useSessionsUi } from '../features/sessions/ui';
@@ -10,14 +11,12 @@ const THEME_LABEL: Record<ThemeMode, string> = { dark: '다크', light: '라이�
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4 } as const;
 
 export function TitleBar() {
-  const [theme, setTheme] = useState<ThemeMode>(loadTheme);
+  const theme = useSettings((s) => s.settings.theme);
   const win = getCurrentWindow();
   const toggleSidebar = useSessionsUi((s) => s.toggleSidebar);
 
   const cycleTheme = () => {
-    const next = nextTheme(theme);
-    applyTheme(next);
-    setTheme(next);
+    useSettings.getState().update({ theme: nextTheme(theme) });
   };
 
   return (
@@ -38,6 +37,14 @@ export function TitleBar() {
       <div className="spacer" data-tauri-drag-region />
       <button className="theme-btn" onClick={cycleTheme} title="테마 전환">
         테마: {THEME_LABEL[theme]}
+      </button>
+      <button
+        className="icon-btn"
+        onClick={() => useKeys.getState().openOverlay({ kind: 'settings' })}
+        title="설정"
+        aria-label="설정"
+      >
+        ⚙
       </button>
       <button className="win-btn" onClick={() => win.minimize()} aria-label="최소화">
         <svg viewBox="0 0 14 14" {...stroke}>

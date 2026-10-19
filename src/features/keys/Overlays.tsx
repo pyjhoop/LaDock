@@ -8,6 +8,7 @@ import {
 } from '../ai/providers';
 import { PROVIDER_GLYPH } from '../sessions/ui';
 import { useStore } from '../../store/store';
+import { SettingsOverlay } from '../settings/SettingsOverlay';
 import { TreeOverlay } from '../sessions/TreeOverlay';
 import { HELP_ROWS, prefixLabel } from './keymap';
 import { useKeys } from './keys';
@@ -176,6 +177,7 @@ export function Overlays() {
       {overlay?.kind === 'help' && <HelpOverlay />}
       {overlay?.kind === 'tree' && <TreeOverlay />}
       {overlay?.kind === 'palette' && <PaletteOverlay />}
+      {overlay?.kind === 'settings' && <SettingsOverlay />}
       {overlay?.kind === 'rename' && (
         <RenameOverlay
           key={overlay.id}

@@ -1,5 +1,6 @@
-//! 레이아웃 저장 파일(`%APPDATA%\LaDock\state.json`) 입출력.
-//! 내용 검증 · 마이그레이션은 프론트(`features/persist`)가 하고, 여기서는 파일만 안전하게 다룬다.
+//! 레이아웃 저장 파일(`%APPDATA%\LaDock\state.json`)과 설정 파일(`settings.json`) 입출력.
+//! 내용 검증 · 마이그레이션은 프론트(`features/persist`, `features/settings`)가 하고,
+//! 여기서는 파일만 안전하게 다룬다.
 
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -8,6 +9,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use crate::limits::app_dir;
 
 const FILE: &str = "state.json";
+const SETTINGS_FILE: &str = "settings.json";
 
 fn state_path() -> Result<PathBuf, String> {
     Ok(app_dir().ok_or("APPDATA 없음")?.join(FILE))
@@ -60,6 +62,21 @@ pub fn state_quarantine() -> Result<Option<String>, String> {
         return Ok(None);
     }
     Ok(Some(quarantine(&path)?.to_string_lossy().into_owned()))
+}
+
+fn settings_path() -> Result<PathBuf, String> {
+    Ok(app_dir().ok_or("APPDATA 없음")?.join(SETTINGS_FILE))
+}
+
+/// 저장된 설정 원문. 파일이 없으면 `None`.
+#[tauri::command]
+pub fn settings_load() -> Result<Option<String>, String> {
+    read_state(&settings_path()?)
+}
+
+#[tauri::command]
+pub fn settings_save(json: String) -> Result<(), String> {
+    write_atomic(&settings_path()?, &json)
 }
 
 /// 각 경로가 지금 존재하는 폴더인지.

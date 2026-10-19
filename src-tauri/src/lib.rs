@@ -42,6 +42,8 @@ pub fn run() {
             persist::state_save,
             persist::state_quarantine,
             persist::dirs_exist,
+            persist::settings_load,
+            persist::settings_save,
             bridge::claude_bridge_status,
             bridge::claude_bridge_connect,
             bridge::claude_bridge_disconnect

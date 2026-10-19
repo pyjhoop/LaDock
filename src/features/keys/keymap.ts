@@ -18,6 +18,7 @@ export type Command =
   | { id: 'zoom' }
   | { id: 'closePane' }
   | { id: 'palette' }
+  | { id: 'settings' }
   | { id: 'help' }
   | { id: 'sendPrefix' };
 
@@ -28,7 +29,7 @@ export interface PrefixSpec {
   shift: boolean;
 }
 
-/** 결정 D2: 기본 prefix는 Ctrl+B. 설정 UI는 M3-02. */
+/** 결정 D2: 기본 prefix는 Ctrl+B. 바꾸는 곳은 설정(M3-02). */
 export const DEFAULT_PREFIX: PrefixSpec = { code: 'KeyB', ctrl: true, alt: false, shift: false };
 
 export const PREFIX_TIMEOUT_MS = 2000;
@@ -114,6 +115,8 @@ export function resolveKey(e: KeyLike, prefix: PrefixSpec = DEFAULT_PREFIX): Com
       return { id: 'closePane' };
     case 'KeyA':
       return { id: 'palette' };
+    case 'Period':
+      return { id: 'settings' };
   }
   const digit = /^Digit(\d)$/.exec(e.code);
   if (digit) {
@@ -159,6 +162,7 @@ export const HELP_ROWS: HelpRow[] = [
   { keys: 'z', desc: 'pane 줌 토글' },
   { keys: 'x', desc: 'pane 닫기' },
   { keys: 'a', desc: 'AI 실행 팔레트', extension: true },
+  { keys: '.', desc: '설정', extension: true },
   { keys: '?', desc: '단축키 도움말' },
   { keys: 'prefix 한 번 더', desc: '터미널에 prefix 키 그대로 전달' },
 ];

@@ -22,8 +22,10 @@ export interface TerminalPaneProps {
   envRemove?: string[];
   /** 헤더 아이콘 (agent pane의 provider 글리프 · 색). 없으면 셸 아이콘. */
   icon?: { glyph: string; color: string };
-  /** 선택하면 자동 복사. 기본 끔 (M3-02 설정 연결 전까지 prop). */
+  /** 선택하면 자동 복사. 기본 끔 */
   copyOnSelect?: boolean;
+  fontFamily?: string;
+  fontSize?: number;
   onClose?: () => void;
   /** 포커스된 pane인가 (테두리 강조 + 키 입력 포커스) */
   focused?: boolean;
@@ -41,6 +43,12 @@ const ACTIVITY_MS = 1000;
 const RESIZE_DEBOUNCE_MS = 80;
 const encoder = new TextEncoder();
 
+/** 설정한 폰트를 앞에 두고, 없을 때를 위해 앱 기본 모노 폰트를 뒤에 붙인다. */
+function termFontFamily(name?: string): string {
+  const mono = getComputedStyle(document.documentElement).getPropertyValue('--mono');
+  return name ? `"${name.replace(/"/g, '')}", ${mono}` : mono;
+}
+
 export function TerminalPane({
   paneKey,
   profileId,
@@ -51,6 +59,8 @@ export function TerminalPane({
   envRemove,
   icon,
   copyOnSelect = false,
+  fontFamily,
+  fontSize = 13,
   onClose,
   focused = false,
   zoomed = false,
@@ -66,7 +76,9 @@ export function TerminalPane({
   const onCloseRef = useRef(onClose);
   const copyRef = useRef(copyOnSelect);
   const onRendererRef = useRef(onRenderer);
+  const fontRef = useRef({ fontFamily, fontSize });
   useEffect(() => {
+    fontRef.current = { fontFamily, fontSize };
     onRendererRef.current = onRenderer;
     onCloseRef.current = onClose;
     copyRef.current = copyOnSelect;
@@ -77,8 +89,8 @@ export function TerminalPane({
     if (!host) return;
 
     const term = new Terminal({
-      fontFamily: getComputedStyle(document.documentElement).getPropertyValue('--mono'),
-      fontSize: 13,
+      fontFamily: termFontFamily(fontRef.current.fontFamily),
+      fontSize: fontRef.current.fontSize,
       lineHeight: 1.2,
       cursorBlink: true,
       scrollback: 10000,
@@ -272,6 +284,15 @@ export function TerminalPane({
     // 프로필/cwd/command가 바뀌면 새 pane으로 취급한다.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileId, cwd, command]);
+
+  // 설정에서 폰트가 바뀌면 재시작 없이 바로 반영하고 크기를 다시 맞춘다
+  useEffect(() => {
+    const term = termRef.current;
+    if (!term) return;
+    term.options.fontFamily = termFontFamily(fontFamily);
+    term.options.fontSize = fontSize;
+    window.dispatchEvent(new Event(REFIT_EVENT));
+  }, [fontFamily, fontSize]);
 
   useEffect(() => {
     if (focused) termRef.current?.focus();
