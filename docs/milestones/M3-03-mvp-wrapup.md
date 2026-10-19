@@ -16,3 +16,7 @@
 - [ ] 설치판으로 하루 이상 문제없이 사용
 
 ## 작업 기록
+- 2026-10-19 자동 점검: `pnpm check`(타입·lint·포맷·Vitest 44개), `cargo test`, `cargo fmt --check`, `cargo clippy -D warnings` 모두 통과.
+- 2026-10-19 설치 빌드: `pnpm tauri build` 성공 — MSI 2.29 MiB, NSIS 1.60 MiB (`src-tauri/target/release/bundle/`). 설치 후 실행·브리지 경로 확인은 **아직 안 함**.
+- 2026-10-19 성능(릴리스 exe 직접 실행): 창 핸들 생성까지 약 149ms. 콘텐츠 렌더 완료 시점이 아니라 창 생성 시점이라 기동 1초 목표의 확정 근거는 아님. `ladock` 프로세스 2개 합 64MB. WebView2는 다른 앱 프로세스가 섞여 있어 LaDock 몫을 분리하지 못함 → 유휴 메모리는 미측정.
+- 남은 것: 회귀 수동 점검, pane 10개·대량 출력 반응성, 설치판 실행·브리지 경로, 1주일 실사용, 문서 정리.
