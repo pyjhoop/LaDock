@@ -7,10 +7,13 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import '@xterm/xterm/css/xterm.css';
 import { onPtyExit, ptyAck, ptyKill, ptyResize, ptySpawn, ptyWrite, type SpawnArgs } from './pty';
+import { registerPty, unregisterPty } from './registry';
 import { readTerminalTheme, watchTheme } from './theme';
 import './terminal.css';
 
 export interface TerminalPaneProps {
+  /** store의 pane id. 주면 store에서 pane이 사라질 때 PTY를 종료할 수 있다. */
+  paneKey?: string;
   profileId: string;
   title: string;
   cwd?: string;
@@ -29,6 +32,7 @@ const RESIZE_DEBOUNCE_MS = 80;
 const encoder = new TextEncoder();
 
 export function TerminalPane({
+  paneKey,
   profileId,
   title,
   cwd,
@@ -133,6 +137,7 @@ export function TerminalPane({
         return;
       }
       paneId = id;
+      if (paneKey) registerPty(paneKey, id);
       const spawned = id;
       pending.splice(0).forEach((d) => write(spawned, d));
     };
@@ -146,6 +151,7 @@ export function TerminalPane({
     const unlistenExit = onPtyExit((pid, code) => {
       if (pid !== paneId) return;
       exited = true;
+      if (paneKey) unregisterPty(paneKey, pid);
       paneId = null;
       setExitCode(code);
       term.write(`\r\n\x1b[2m[프로세스 종료: code ${code}] — Enter로 재시작, x로 닫기\x1b[0m`);
@@ -223,7 +229,10 @@ export function TerminalPane({
       unwatchTheme();
       host.removeEventListener('contextmenu', onContext);
       void unlistenExit.then((un) => un());
-      if (paneId !== null) void ptyKill(paneId).catch(() => {});
+      if (paneId !== null) {
+        if (paneKey) unregisterPty(paneKey, paneId);
+        void ptyKill(paneId).catch(() => {});
+      }
       term.dispose();
     };
     // 프로필/cwd/command가 바뀌면 새 pane으로 취급한다.
