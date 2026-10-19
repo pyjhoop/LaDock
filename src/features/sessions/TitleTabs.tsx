@@ -1,3 +1,4 @@
+import { IconChevD, IconClose, IconPlus } from '../../components/icons';
 import { activeSession, windowLabel } from '../../store/ops';
 import { useStore } from '../../store/store';
 import { leaves } from '../../store/tree';
@@ -57,7 +58,7 @@ export function TitleTabs() {
         >
           <span className="sdot" style={{ ['--sc' as string]: sess.color }} />
           <span className="sname">{sess.name}</span>
-          <span className="chev">▾</span>
+          <IconChevD />
         </button>
       )}
       <div className="tbar-sep" />
@@ -110,7 +111,7 @@ export function TitleTabs() {
                   closeWindow(sess.id, w.id);
                 }}
               >
-                ×
+                <IconClose />
               </span>
             </button>
           );
@@ -121,7 +122,7 @@ export function TitleTabs() {
           title="새 탭 (Ctrl+B c)"
           aria-label="새 탭"
         >
-          +
+          <IconPlus />
         </button>
       </div>
     </>

@@ -336,3 +336,17 @@
   width: 100%;
   margin: 2px 0;
 }
+.icon-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.sess-btn svg {
+  width: 12px;
+  height: 12px;
+  color: var(--muted);
+  flex: none;
+}
+.tab .x svg {
+  width: 12px;
+  height: 12px;
+}

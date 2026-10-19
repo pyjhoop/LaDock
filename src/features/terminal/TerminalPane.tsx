@@ -6,6 +6,7 @@ import { Unicode11Addon } from '@xterm/addon-unicode11';
 import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import '@xterm/xterm/css/xterm.css';
+import { IconClose, IconSplitD, IconSplitR, IconUnzoom, IconZoom } from '../../components/icons';
 import { onPtyExit, ptyAck, ptyKill, ptyResize, ptySpawn, ptyWrite, type SpawnArgs } from './pty';
 import { clearPaneCwd, parseOsc7, registerPty, setPaneCwd, unregisterPty } from './registry';
 import { readTerminalTheme, watchTheme } from './theme';
@@ -305,24 +306,46 @@ export function TerminalPane({
           {icon?.glyph ?? '❯_'}
         </span>
         <span className="pane-title">{title}</span>
-        {cwd && <span className="pane-cwd">{cwd}</span>}
-        <span
-          className={`pane-dot${active ? ' on' : ''}${exitCode !== null ? ' dead' : ''}`}
-          title={exitCode !== null ? '종료됨' : active ? '출력 중' : '대기'}
-        />
-        <span className="spacer" />
+        <span className="pane-cwd">{cwd}</span>
+        <span className={`activity${active ? ' busy' : ''}${exitCode !== null ? ' dead' : ''}`}>
+          <span>{exitCode !== null ? '종료됨' : active ? '출력 중' : '대기'}</span>
+        </span>
         <span className="pane-actions">
-          <button type="button" className="opt" title="좌우 분할" onClick={() => onSplit?.('row')}>
-            ▥
+          <button
+            type="button"
+            className="opt"
+            title="좌우 분할"
+            aria-label="좌우 분할"
+            onClick={() => onSplit?.('row')}
+          >
+            <IconSplitR />
           </button>
-          <button type="button" className="opt" title="상하 분할" onClick={() => onSplit?.('col')}>
-            ▤
+          <button
+            type="button"
+            className="opt"
+            title="상하 분할"
+            aria-label="상하 분할"
+            onClick={() => onSplit?.('col')}
+          >
+            <IconSplitD />
           </button>
-          <button type="button" title={zoomed ? '줌 해제' : '줌'} onClick={() => onToggleZoom?.()}>
-            {zoomed ? '⤡' : '⤢'}
+          <button
+            type="button"
+            className="opt"
+            title={zoomed ? '줌 해제' : '줌'}
+            aria-label="줌"
+            onClick={() => onToggleZoom?.()}
+          >
+            {zoomed ? <IconUnzoom /> : <IconZoom />}
           </button>
-          <button type="button" title="닫기" onClick={() => onClose?.()}>
-            ✕
+          <button
+            type="button"
+            className="danger"
+            title="닫기"
+            aria-label="pane 닫기"
+            onClick={() => onClose?.()}
+          >
+            <IconClose />
           </button>
         </span>
       </header>
