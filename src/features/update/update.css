@@ -1,0 +1,26 @@
+.update-banner {
+  position: fixed;
+  right: 16px;
+  bottom: 40px;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  max-width: min(440px, 94vw);
+  padding: 10px 14px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+}
+.update-text small {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  word-break: break-word;
+}
+.update-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}

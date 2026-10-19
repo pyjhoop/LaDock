@@ -6,6 +6,8 @@ import { useLimits } from '../features/limits/limits';
 import { Overlays } from '../features/keys/Overlays';
 import { installKeyHandler } from '../features/keys/keys';
 import { startSettingsApply } from '../features/settings/apply';
+import { UpdateBanner } from '../features/update/UpdateBanner';
+import { useUpdate } from '../features/update/updater';
 import { RestoreGate } from '../features/persist/RestoreGate';
 import { PaneChips } from '../features/layout/PaneChips';
 import { Workspace } from '../features/layout/Workspace';
@@ -53,6 +55,11 @@ export function App() {
   useEffect(() => startSettingsApply(), []);
   useEffect(() => void useProviders.getState().load(), []);
   useEffect(() => void useLimits.getState().load(), []);
+  useEffect(() => {
+    if (!import.meta.env.PROD) return;
+    const t = window.setTimeout(() => void useUpdate.getState().check({ silent: true }), 3000);
+    return () => window.clearTimeout(t);
+  }, []);
   const narrow = useSessionsUi((s) => s.mode === 'narrow');
   useEffect(() => {
     const onResize = () => {
@@ -82,6 +89,7 @@ export function App() {
         </main>
         <StatusBar />
         <Overlays />
+        <UpdateBanner />
       </div>
     </RestoreGate>
   );

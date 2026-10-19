@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { getVersion } from '@tauri-apps/api/app';
 import type { ThemeMode } from '../../app/theme';
 import { PROVIDER_META, PROVIDER_ORDER } from '../ai/providers';
 import { isModifierOnly, prefixLabel, type PrefixSpec } from '../keys/keymap';
 import { useKeys } from '../keys/keys';
 import { useLimits } from '../limits/limits';
+import { useUpdate } from '../update/updater';
 import { useShells } from '../sessions/shells';
 import { FONT_SIZE_RANGE, prefixWarning, useSettings } from './settings';
 import './settings.css';
@@ -169,6 +171,45 @@ function BridgeField() {
   );
 }
 
+function UpdateField() {
+  const { phase, version, progress, error } = useUpdate();
+  const [current, setCurrent] = useState('');
+  useEffect(() => void getVersion().then(setCurrent, () => {}), []);
+  const { check, install } = useUpdate.getState();
+
+  const busy = phase === 'checking' || phase === 'installing';
+  const hasUpdate = version !== null && phase !== 'uptodate';
+  const status =
+    phase === 'checking'
+      ? '확인하는 중…'
+      : phase === 'installing'
+        ? `받는 중${progress === null ? '…' : ` ${progress}%`} — 끝나면 다시 시작해요`
+        : phase === 'error'
+          ? `실패: ${error}`
+          : phase === 'uptodate'
+            ? '최신 버전이에요'
+            : hasUpdate
+              ? `새 버전 ${version}이 있어요`
+              : null;
+
+  return (
+    <>
+      <div className="set-line">
+        <span className="set-state">현재 {current ? `v${current}` : '…'}</span>
+        <button
+          type="button"
+          className={`set-btn${hasUpdate ? ' primary' : ''}`}
+          disabled={busy}
+          onClick={() => void (hasUpdate ? install() : check())}
+        >
+          {hasUpdate ? '업데이트하고 다시 시작' : '업데이트 확인'}
+        </button>
+      </div>
+      {status && <small className={phase === 'error' ? 'set-warn' : undefined}>{status}</small>}
+    </>
+  );
+}
+
 export function SettingsOverlay() {
   const close = useKeys((s) => s.closeOverlay);
   const s = useSettings((st) => st.settings);
@@ -282,6 +323,11 @@ export function SettingsOverlay() {
             />
           </Row>
         ))}
+
+        <h3>업데이트</h3>
+        <div className="set-block">
+          <UpdateField />
+        </div>
 
         <h3>Claude 한도 연동</h3>
         <div className="set-block">
