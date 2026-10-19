@@ -162,3 +162,27 @@ describe('store → PTY 종료', () => {
     expect(Object.keys(useStore.getState().panes)).toHaveLength(1);
   });
 });
+
+describe('openPane (AI 실행)', () => {
+  const agent = (id: string) => ({
+    id,
+    kind: 'agent' as const,
+    provider: 'claude' as const,
+    profileId: 'pwsh',
+    command: 'claude',
+    cwd: 'C:\\work',
+  });
+
+  it('분할로 열면 새 pane이 포커스를 받는다', () => {
+    const s = ops.splitWithPane(ops.createInitialState(), 'row', agent('a1'));
+    expect(win(s).focusPaneId).toBe('a1');
+    expect(s.panes.a1.kind).toBe('agent');
+    expect(tree.leaves(win(s).root)).toHaveLength(2);
+  });
+
+  it('새 탭으로 열면 현재 세션에 탭이 늘어난다', () => {
+    const s = ops.newWindowWithPane(ops.createInitialState(), agent('a2'));
+    expect(ops.activeSession(s).windows).toHaveLength(2);
+    expect(win(s).focusPaneId).toBe('a2');
+  });
+});

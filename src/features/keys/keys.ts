@@ -18,8 +18,8 @@ import {
 export type Overlay =
   | { kind: 'help' }
   | { kind: 'tree' }
+  | { kind: 'palette' }
   | { kind: 'rename'; target: 'session' | 'window'; id: string; value: string };
-// 실행 팔레트(M2-02)는 화면을 만들 때 여기에 추가한다.
 
 interface KeysState {
   prefix: PrefixSpec;
@@ -54,8 +54,7 @@ export function runCommand(cmd: Command) {
   const win = activeWindow(sess);
   switch (cmd.id) {
     case 'palette':
-      // 화면이 생기기 전(M2-02)에 상태만 열면 닫을 수 없어 이후 키가 먹통이 된다.
-      return;
+      return keys.openOverlay({ kind: 'palette' });
     case 'tree':
       return keys.openOverlay({ kind: 'tree' });
     case 'help':

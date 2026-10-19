@@ -57,3 +57,52 @@
   color: var(--text);
   font: inherit;
 }
+
+.pal-where {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.pal-where button {
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 12px;
+}
+.pal-where button.on {
+  border-color: var(--accent);
+  color: var(--text);
+}
+.pal-list {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+}
+.pal-list button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+.pal-list button:hover {
+  background: var(--panel-2);
+}
+.pal-list button.off {
+  opacity: 0.45;
+}
+.pal-list .muted {
+  margin: 0 0 0 auto;
+}
+.pal-msg {
+  margin-bottom: 8px;
+  color: #e5a24a;
+  font-size: 12px;
+}

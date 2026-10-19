@@ -2,11 +2,13 @@ import { create } from 'zustand';
 import { killPanePty } from '../features/terminal/registry';
 import * as ops from './ops';
 import type { Direction } from './tree';
-import type { AppState, SplitPath } from './types';
+import type { AppState, PaneSpec, SplitPath } from './types';
 
 interface Actions {
   focusPane: (paneId: string) => void;
   splitFocused: (dir: 'row' | 'col', profileId?: string) => void;
+  /** 주어진 pane을 'row'/'col'로 분할해 붙이거나('tab'이면 새 탭으로) 연다 */
+  openPane: (where: 'row' | 'col' | 'tab', pane: PaneSpec) => void;
   closePane: (paneId: string) => void;
   setRatio: (windowId: string, path: SplitPath, ratio: number) => void;
   moveFocus: (dir: Direction) => void;
@@ -39,6 +41,10 @@ export const useStore = create<AppState & Actions>()((set) => {
     ...ops.createInitialState(),
     focusPane: (id) => apply((s) => ops.focusPane(s, id)),
     splitFocused: (dir, profileId) => apply((s) => ops.splitFocused(s, dir, profileId)),
+    openPane: (where, pane) =>
+      apply((s) =>
+        where === 'tab' ? ops.newWindowWithPane(s, pane) : ops.splitWithPane(s, where, pane),
+      ),
     closePane: (id) => apply((s) => ops.closePane(s, id)),
     setRatio: (w, p, r) => apply((s) => ops.setRatio(s, w, p, r)),
     moveFocus: (d) => apply((s) => ops.moveFocus(s, d)),

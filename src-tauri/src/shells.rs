@@ -156,10 +156,24 @@ fn cached() -> &'static Vec<ShellProfile> {
 
 /// profileId → (실행 파일, 인자). 감지 목록에 없으면 pwsh.exe로 폴백.
 pub fn resolve(profile_id: &str) -> (String, Vec<String>) {
-    match cached().iter().find(|p| p.id == profile_id) {
+    let (path, mut args) = match cached().iter().find(|p| p.id == profile_id) {
         Some(p) => (p.path.clone(), p.args.clone()),
         None => ("pwsh.exe".into(), vec![]),
+    };
+    if args.is_empty() && matches!(profile_id, "pwsh" | "powershell") {
+        args = osc7_args();
     }
+    (path, args)
+}
+
+/// PowerShell 프롬프트 앞에 OSC 7(현재 폴더)을 붙인다. 프로필의 기존 prompt는 그대로 감싼다.
+/// AI 실행 때 포커스 pane의 현재 폴더를 물려받는 데 쓴다 (M2-02).
+const OSC7_PROMPT: &str = r#"$global:__ladock_prompt = $function:prompt; function global:prompt { $e = [char]27; $p = (Get-Location).ProviderPath; $osc = if ($p) { "$e]7;file://localhost/" + $p.Replace('\', '/') + "$e\" } else { '' }; $osc + (& $global:__ladock_prompt) }"#;
+
+fn osc7_args() -> Vec<String> {
+    ["-NoLogo", "-NoExit", "-Command", OSC7_PROMPT]
+        .map(String::from)
+        .to_vec()
 }
 
 #[tauri::command]
@@ -188,6 +202,13 @@ mod tests {
     #[test]
     fn resolve_unknown_falls_back_to_pwsh() {
         assert_eq!(resolve("nope-xyz").0, "pwsh.exe");
+    }
+
+    #[test]
+    fn powershell_gets_osc7_prompt() {
+        let (_, args) = resolve("pwsh");
+        assert!(args.iter().any(|a| a.contains("]7;file://")));
+        assert!(resolve("cmd").1.iter().all(|a| !a.contains("]7;")));
     }
 
     #[test]

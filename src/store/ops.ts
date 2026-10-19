@@ -118,9 +118,13 @@ export function focusPane(s: AppState, paneId: string): AppState {
 
 /** 포커스된 pane을 나눈다. 새 pane이 포커스를 받는다. profileId를 주면 그 셸로 띄운다. */
 export function splitFocused(s: AppState, dir: 'row' | 'col', profileId?: string): AppState {
+  return splitWithPane(s, dir, inheritedPane(s, profileId));
+}
+
+/** 포커스된 pane 옆에 주어진 pane을 붙인다 (AI 실행 등). */
+export function splitWithPane(s: AppState, dir: 'row' | 'col', pane: PaneSpec): AppState {
   const sess = activeSession(s);
   const win = activeWindow(sess);
-  const pane = inheritedPane(s, profileId);
   return {
     ...mapSession(s, sess.id, (x) =>
       mapWindow(x, win.id, (w) => ({
@@ -195,8 +199,12 @@ export function toggleZoom(s: AppState): AppState {
 // ── 탭(window) ───────────────────────────────────
 
 export function newWindow(s: AppState): AppState {
+  return newWindowWithPane(s, inheritedPane(s));
+}
+
+/** 현재 세션에 주어진 pane 하나짜리 새 탭을 만든다. */
+export function newWindowWithPane(s: AppState, pane: PaneSpec): AppState {
   const sess = activeSession(s);
-  const pane = inheritedPane(s);
   const win = newWindowOf(pane);
   return {
     ...mapSession(s, sess.id, (x) => ({

@@ -20,3 +20,23 @@ export function writePanePty(paneKey: string, data: string) {
   const id = ptys.get(paneKey);
   if (id !== undefined) void ptyWrite(id, new TextEncoder().encode(data)).catch(() => {});
 }
+
+// store pane id → 셸이 OSC 7로 알려 준 현재 폴더. store에 넣으면 cwd가 바뀔 때 pane이 다시 만들어지므로 따로 둔다.
+const cwds = new Map<string, string>();
+
+export const setPaneCwd = (paneKey: string, cwd: string) => void cwds.set(paneKey, cwd);
+export const getPaneCwd = (paneKey: string) => cwds.get(paneKey);
+export const clearPaneCwd = (paneKey: string) => void cwds.delete(paneKey);
+
+/** OSC 7 페이로드(`file://host/C:/dir`) → Windows 경로. 해석할 수 없으면 null. */
+export function parseOsc7(data: string): string | null {
+  const m = /^file:\/\/[^/]*(\/.*)$/i.exec(data);
+  if (!m) return null;
+  let path: string;
+  try {
+    path = decodeURIComponent(m[1]);
+  } catch {
+    return null;
+  }
+  return /^\/[A-Za-z]:/.test(path) ? path.slice(1).replace(/\//g, '\\') : null;
+}

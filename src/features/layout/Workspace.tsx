@@ -3,7 +3,8 @@ import { REFIT_EVENT, TerminalPane } from '../terminal/TerminalPane';
 import { useStore } from '../../store/store';
 import { computeLayout, type Divider } from '../../store/tree';
 import type { Window } from '../../store/types';
-import { useSessionsUi } from '../sessions/ui';
+import { envRemoveFor } from '../ai/providers';
+import { PROVIDER_GLYPH, useSessionsUi } from '../sessions/ui';
 import './layout.css';
 
 const pct = (n: number) => `${n * 100}%`;
@@ -93,6 +94,8 @@ function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
               cwd={spec.cwd || undefined}
               command={spec.command}
               args={spec.args}
+              envRemove={envRemoveFor(spec)}
+              icon={spec.provider ? PROVIDER_GLYPH[spec.provider] : undefined}
               focused={focused && visible}
               zoomed={win.zoomed}
               onFocus={() => focusPane(id)}

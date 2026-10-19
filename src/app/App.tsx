@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StatusBar } from '../components/StatusBar';
 import { TitleBar } from '../components/TitleBar';
+import { useProviders } from '../features/ai/providers';
 import { Overlays } from '../features/keys/Overlays';
 import { installKeyHandler } from '../features/keys/keys';
 import { PaneChips } from '../features/layout/PaneChips';
@@ -46,6 +47,7 @@ function StressGrid({ count }: { count: number }) {
 
 export function App() {
   useEffect(() => installKeyHandler(), []);
+  useEffect(() => void useProviders.getState().load(), []);
   const narrow = useSessionsUi((s) => s.mode === 'narrow');
   useEffect(() => {
     const onResize = () => {

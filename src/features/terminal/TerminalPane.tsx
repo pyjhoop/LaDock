@@ -7,7 +7,7 @@ import { WebLinksAddon } from '@xterm/addon-web-links';
 import { WebglAddon } from '@xterm/addon-webgl';
 import '@xterm/xterm/css/xterm.css';
 import { onPtyExit, ptyAck, ptyKill, ptyResize, ptySpawn, ptyWrite, type SpawnArgs } from './pty';
-import { registerPty, unregisterPty } from './registry';
+import { clearPaneCwd, parseOsc7, registerPty, setPaneCwd, unregisterPty } from './registry';
 import { readTerminalTheme, watchTheme } from './theme';
 import './terminal.css';
 
@@ -20,6 +20,8 @@ export interface TerminalPaneProps {
   command?: string;
   args?: string[];
   envRemove?: string[];
+  /** 헤더 아이콘 (agent pane의 provider 글리프 · 색). 없으면 셸 아이콘. */
+  icon?: { glyph: string; color: string };
   /** 선택하면 자동 복사. 기본 끔 (M3-02 설정 연결 전까지 prop). */
   copyOnSelect?: boolean;
   onClose?: () => void;
@@ -47,6 +49,7 @@ export function TerminalPane({
   command,
   args,
   envRemove,
+  icon,
   copyOnSelect = false,
   onClose,
   focused = false,
@@ -172,6 +175,13 @@ export function TerminalPane({
       term.write(`\r\n\x1b[2m[프로세스 종료: code ${code}] — Enter로 재시작, x로 닫기\x1b[0m`);
     });
 
+    // 셸이 OSC 7로 알려 주는 현재 폴더 — AI 실행 때 cwd를 물려주는 데 쓴다
+    const osc7 = term.parser.registerOscHandler(7, (data) => {
+      const dir = parseOsc7(data);
+      if (dir && paneKey) setPaneCwd(paneKey, dir);
+      return true;
+    });
+
     // 입력
     term.onData((s) => {
       if (exited) {
@@ -249,6 +259,8 @@ export function TerminalPane({
       window.removeEventListener(REFIT_EVENT, refit);
       termRef.current = null;
       unwatchTheme();
+      osc7.dispose();
+      if (paneKey) clearPaneCwd(paneKey);
       host.removeEventListener('contextmenu', onContext);
       void unlistenExit.then((un) => un());
       if (paneId !== null) {
@@ -268,8 +280,8 @@ export function TerminalPane({
   return (
     <section className={`pane${focused ? ' focused' : ''}`} onMouseDownCapture={() => onFocus?.()}>
       <header className="pane-head">
-        <span className="pane-icon" aria-hidden>
-          ❯_
+        <span className="pane-icon" aria-hidden style={icon && { color: icon.color }}>
+          {icon?.glyph ?? '❯_'}
         </span>
         <span className="pane-title">{title}</span>
         {cwd && <span className="pane-cwd">{cwd}</span>}
