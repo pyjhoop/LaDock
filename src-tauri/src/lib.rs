@@ -1,3 +1,4 @@
+mod providers;
 mod pty;
 mod pty_ipc;
 mod shells;
@@ -5,6 +6,10 @@ mod shells;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .setup(|app| {
+            providers::start_watcher(app.handle().clone());
+            Ok(())
+        })
         .manage(pty_ipc::PtyRegistry::default())
         .invoke_handler(tauri::generate_handler![
             pty_ipc::pty_spawn,
@@ -12,7 +17,8 @@ pub fn run() {
             pty_ipc::pty_resize,
             pty_ipc::pty_kill,
             pty_ipc::pty_ack,
-            shells::shells_detect
+            shells::shells_detect,
+            providers::providers_detect
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
