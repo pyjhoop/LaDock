@@ -20,6 +20,8 @@ export interface TerminalPaneProps {
   /** 선택하면 자동 복사. 기본 끔 (M3-02 설정 연결 전까지 prop). */
   copyOnSelect?: boolean;
   onClose?: () => void;
+  /** 렌더러가 정해지거나 바뀔 때 알린다 (M0-04 검증용). */
+  onRenderer?: (renderer: 'webgl' | 'dom') => void;
 }
 
 const ACTIVITY_MS = 1000;
@@ -35,13 +37,16 @@ export function TerminalPane({
   envRemove,
   copyOnSelect = false,
   onClose,
+  onRenderer,
 }: TerminalPaneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
   const [exitCode, setExitCode] = useState<number | null>(null);
   const onCloseRef = useRef(onClose);
   const copyRef = useRef(copyOnSelect);
+  const onRendererRef = useRef(onRenderer);
   useEffect(() => {
+    onRendererRef.current = onRenderer;
     onCloseRef.current = onClose;
     copyRef.current = copyOnSelect;
   });
@@ -68,10 +73,15 @@ export function TerminalPane({
     term.open(host);
     try {
       const gl = new WebglAddon();
-      gl.onContextLoss(() => gl.dispose());
+      gl.onContextLoss(() => {
+        gl.dispose();
+        onRendererRef.current?.('dom');
+      });
       term.loadAddon(gl);
+      onRendererRef.current?.('webgl');
     } catch {
       // WebGL 불가 → 기본 DOM 렌더러
+      onRendererRef.current?.('dom');
     }
     fit.fit();
 
