@@ -31,10 +31,14 @@ LaDock/
 │  ├─ architecture.md       # 이 문서
 │  └─ milestones/           # INDEX.md + 기능별 파일
 ├─ src/                     # React
-│  ├─ app/  components/  store/
-│  └─ features/{terminal,layout,keys,sessions,providers,limits,settings}/
+│  ├─ main.tsx
+│  ├─ app/                  # App, theme.ts(테마 모드), theme.css(색 토큰), app.css
+│  ├─ components/           # TitleBar 등 공용 UI
+│  ├─ store/                # (M1-01에서 추가)
+│  └─ features/{terminal,layout,keys,sessions,providers,limits,settings}/   # 기능 구현 시 추가
+├─ eslint.config.js  .prettierrc.json  tsconfig*.json  vite.config.ts   # vitest 설정도 vite.config.ts
 └─ src-tauri/
-   └─ src/{main.rs, pty.rs, shells.rs, store.rs, bridge.rs,
+   └─ src/{main.rs, lib.rs, pty.rs, shells.rs, store.rs, bridge.rs,
            providers/{mod,claude,codex,gemini,antigravity}.rs,
            limits/{mod,claude,gemini}.rs}
 ```

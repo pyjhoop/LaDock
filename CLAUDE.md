@@ -33,11 +33,11 @@ Windows용 개인 터미널 앱. psmux처럼 **세션 → 탭 → 분할 pane** 
 
 ## 명령어
 
-<!-- M0-01에서 확정 후 채운다 -->
-- 개발 실행: (미정 — 예: `pnpm tauri dev`)
-- 테스트: (미정 — 예: `pnpm test`, `cargo test --manifest-path src-tauri/Cargo.toml`)
-- lint · 타입체크: (미정)
-- 빌드: (미정 — 예: `pnpm tauri build`)
+- 개발 실행: `pnpm tauri dev`
+- 테스트: `pnpm test` (Vitest), `cargo test --manifest-path src-tauri/Cargo.toml`
+- 타입체크 · lint · 포맷: `pnpm typecheck` · `pnpm lint` · `pnpm format:check` (프론트 전체는 `pnpm check`)
+- Rust: `cargo fmt --check` · `cargo clippy --all-targets -- -D warnings` (`src-tauri`에서)
+- 빌드: `pnpm tauri build`
 
 ## 환경
 

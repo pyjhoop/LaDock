@@ -1,0 +1,7 @@
+node_modules
+dist
+pnpm-lock.yaml
+src-tauri
+docs
+public
+*.md

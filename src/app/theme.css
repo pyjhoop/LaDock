@@ -1,0 +1,89 @@
+/* 토큰 출처: docs/design-mvp.html :root. 다크 기본, [data-theme]로 강제, 없으면 시스템을 따른다. */
+:root {
+  --bg: #eef0f3;
+  --panel: #ffffff;
+  --panel-2: #f5f6f8;
+  --border: #d8dde4;
+  --border-strong: #c3cad3;
+  --text: #1a1f26;
+  --muted: #5f6977;
+  --accent: #0c8f83;
+  --on-accent: #ffffff;
+  --amber: #b97700;
+  --on-amber: #ffffff;
+  --ok: #1f9d57;
+  --warn: #b97700;
+  --off: #8a939f;
+  --danger: #d14343;
+  --term-bg: #fbfbfc;
+  --term-fg: #1f2328;
+  --t-dim: #7a828d;
+  --t-green: #1a7f37;
+  --t-blue: #0a62c9;
+  --t-yellow: #8a6100;
+  --t-red: #c62f2f;
+  --t-magenta: #8a3ec2;
+  --shadow: 0 10px 30px rgba(20, 30, 45, 0.14);
+  --sans:
+    'Pretendard', 'Segoe UI Variable Text', 'Segoe UI', 'Malgun Gothic', system-ui, sans-serif;
+  --mono: 'Cascadia Code', 'Cascadia Mono', 'D2Coding', Consolas, 'Malgun Gothic', monospace;
+  color-scheme: light;
+}
+
+:root[data-theme='dark'] {
+  --bg: #0d1015;
+  --panel: #141920;
+  --panel-2: #1a2029;
+  --border: #252d38;
+  --border-strong: #323c4a;
+  --text: #e2e7ee;
+  --muted: #8a94a2;
+  --accent: #3ccfbd;
+  --on-accent: #04201d;
+  --amber: #f3b443;
+  --on-amber: #241700;
+  --ok: #3fcf7f;
+  --warn: #f3b443;
+  --off: #6b7584;
+  --danger: #f06a6a;
+  --term-bg: #0a0d11;
+  --term-fg: #d5dce5;
+  --t-dim: #6f7987;
+  --t-green: #6fdc8c;
+  --t-blue: #78a9ff;
+  --t-yellow: #f1c860;
+  --t-red: #ff7b7b;
+  --t-magenta: #c79bff;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --bg: #0d1015;
+    --panel: #141920;
+    --panel-2: #1a2029;
+    --border: #252d38;
+    --border-strong: #323c4a;
+    --text: #e2e7ee;
+    --muted: #8a94a2;
+    --accent: #3ccfbd;
+    --on-accent: #04201d;
+    --amber: #f3b443;
+    --on-amber: #241700;
+    --ok: #3fcf7f;
+    --warn: #f3b443;
+    --off: #6b7584;
+    --danger: #f06a6a;
+    --term-bg: #0a0d11;
+    --term-fg: #d5dce5;
+    --t-dim: #6f7987;
+    --t-green: #6fdc8c;
+    --t-blue: #78a9ff;
+    --t-yellow: #f1c860;
+    --t-red: #ff7b7b;
+    --t-magenta: #c79bff;
+    --shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+    color-scheme: dark;
+  }
+}

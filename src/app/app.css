@@ -1,0 +1,102 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 13px/1.45 var(--sans);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+svg {
+  display: block;
+}
+
+.app {
+  display: grid;
+  height: 100%;
+  grid-template-rows: 40px minmax(0, 1fr);
+}
+.main {
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.titlebar {
+  display: flex;
+  align-items: stretch;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  min-width: 0;
+  user-select: none;
+}
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.mark {
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  background: linear-gradient(
+    135deg,
+    var(--accent),
+    color-mix(in srgb, var(--accent) 35%, #7a5cff)
+  );
+  transform: rotate(45deg) scale(0.86);
+}
+.spacer {
+  flex: 1;
+}
+.win-btn {
+  width: 46px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.win-btn:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+.win-btn.close:hover {
+  background: var(--danger);
+  color: #fff;
+}
+.win-btn svg {
+  width: 14px;
+  height: 14px;
+}
+.theme-btn {
+  align-self: center;
+  height: 26px;
+  padding: 0 10px;
+  margin-right: 6px;
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  background: var(--panel-2);
+  color: var(--muted);
+  font-size: 12px;
+}
+.theme-btn:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
