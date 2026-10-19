@@ -27,7 +27,8 @@ export function TitleTabs() {
   const { renameSession, renameWindow, selectWindow, closeWindow, newWindow } = state;
   const openOverlay = useKeys((s) => s.openOverlay);
 
-  const renamingSession = renaming?.target === 'session' && renaming.id === sess.id;
+  const renamingSession =
+    renaming?.target === 'session' && renaming.from === 'title' && renaming.id === sess.id;
 
   return (
     <>
@@ -47,11 +48,11 @@ export function TitleTabs() {
           onContextMenu={(e) => {
             e.preventDefault();
             useKeys.getState().closeOverlay();
-            startRename({ target: 'session', id: sess.id });
+            startRename({ target: 'session', id: sess.id, from: 'title' });
           }}
           onDoubleClick={() => {
             useKeys.getState().closeOverlay();
-            startRename({ target: 'session', id: sess.id });
+            startRename({ target: 'session', id: sess.id, from: 'title' });
           }}
         >
           <span className="sdot" style={{ ['--sc' as string]: sess.color }} />
@@ -63,7 +64,8 @@ export function TitleTabs() {
       <div className="tabs" role="tablist">
         {sess.windows.map((w, i) => {
           const active = w.id === sess.activeWindowId;
-          const isRenaming = renaming?.target === 'window' && renaming.id === w.id;
+          const isRenaming =
+            renaming?.target === 'window' && renaming.from === 'title' && renaming.id === w.id;
           if (isRenaming) {
             return (
               <InlineRename
@@ -84,10 +86,10 @@ export function TitleTabs() {
               role="tab"
               aria-selected={active}
               onClick={() => selectWindow(w.id)}
-              onDoubleClick={() => startRename({ target: 'window', id: w.id })}
+              onDoubleClick={() => startRename({ target: 'window', id: w.id, from: 'title' })}
               onContextMenu={(e) => {
                 e.preventDefault();
-                startRename({ target: 'window', id: w.id });
+                startRename({ target: 'window', id: w.id, from: 'title' });
               }}
               onAuxClick={(e) => e.button === 1 && closeWindow(sess.id, w.id)}
             >

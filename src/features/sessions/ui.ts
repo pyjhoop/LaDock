@@ -3,7 +3,12 @@ import { useStore } from '../../store/store';
 import type { PaneSpec, ProviderId } from '../../store/types';
 
 /** 이름을 인라인으로 바꾸는 중인 대상 */
-export type Renaming = { target: 'session' | 'window'; id: string } | null;
+/** from: 입력창을 띄울 위치 (같은 대상을 두 곳에 동시에 띄우지 않는다) */
+export type Renaming = {
+  target: 'session' | 'window';
+  id: string;
+  from: 'title' | 'side';
+} | null;
 
 interface SessionsUi {
   renaming: Renaming;
@@ -25,7 +30,7 @@ export const useSessionsUi = create<SessionsUi>()((set) => ({
 export function createSessionAndRename() {
   useStore.getState().newSession();
   const { activeSessionId } = useStore.getState();
-  useSessionsUi.getState().startRename({ target: 'session', id: activeSessionId });
+  useSessionsUi.getState().startRename({ target: 'session', id: activeSessionId, from: 'title' });
 }
 
 export const PROVIDER_GLYPH: Record<ProviderId, { glyph: string; color: string }> = {

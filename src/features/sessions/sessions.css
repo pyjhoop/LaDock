@@ -307,3 +307,7 @@
 .ch-foot kbd {
   margin-left: 8px;
 }
+.sidebar .rename-input {
+  width: 100%;
+  margin: 2px 0;
+}
