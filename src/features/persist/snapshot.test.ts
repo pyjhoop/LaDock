@@ -66,6 +66,23 @@ describe('복원 가공', () => {
     expect(f.state.panes[id].cwd).toBe('D:\\live');
   });
 
+  it('셸 pane에서 직접 띄운 AI는 agent pane으로 저장한다', () => {
+    const s = sample();
+    const id = Object.keys(s.panes)[0];
+    const f = snapshotState(
+      s,
+      () => undefined,
+      (p) =>
+        p === id ? { kind: 'agent', provider: 'claude', command: 'claude', args: [] } : undefined,
+    );
+    expect(f.state.panes[id]).toMatchObject({
+      kind: 'agent',
+      provider: 'claude',
+      command: 'claude',
+    });
+    expect(parseStateFile(JSON.stringify(f)).ok).toBe(true);
+  });
+
   it('이어하기는 claude · agy에 -c를 붙이고, 새로 시작은 뗀다', () => {
     const s: AppState = { ...sample(), panes: { ...sample().panes, pa: agent } };
     const on = applyResume(s, true).panes.pa.args;

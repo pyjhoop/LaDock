@@ -4,7 +4,9 @@ import { create } from 'zustand';
 import { createInitialState } from '../../store/ops';
 import { useStore } from '../../store/store';
 import type { AppState } from '../../store/types';
+import { baseArgs, PROVIDER_META, useProviders } from '../ai/providers';
 import { loadSettings } from '../settings/settings';
+import { useDetected } from '../terminal/detect';
 import { getPaneCwd } from '../terminal/registry';
 import { applyResume, fixMissingCwds, parseStateFile, snapshotState } from './snapshot';
 
@@ -80,7 +82,22 @@ export async function loadSaved(): Promise<void> {
 let lastSaved = '';
 
 async function save() {
-  const json = JSON.stringify(snapshotState(useStore.getState(), getPaneCwd));
+  const detected = useDetected.getState().byPane;
+  const json = JSON.stringify(
+    snapshotState(useStore.getState(), getPaneCwd, (id) => {
+      const provider = detected[id];
+      if (!provider) return undefined;
+      const meta = PROVIDER_META[provider];
+      const bin = useProviders.getState().statuses.find((s) => s.id === provider)?.binPath;
+      return {
+        kind: 'agent',
+        provider,
+        command: bin ?? meta.bin,
+        args: baseArgs(provider),
+        title: meta.name,
+      };
+    }),
+  );
   if (json === lastSaved) return;
   try {
     await invoke('state_save', { json });

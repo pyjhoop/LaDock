@@ -110,7 +110,7 @@ function installedStatus(provider: ProviderId): ProviderStatus | string {
 }
 
 /** 공통 인자: 권한 생략 · provider 기본 인자 · 설정의 추가 인자 */
-function baseArgs(provider: ProviderId): string[] {
+export function baseArgs(provider: ProviderId): string[] {
   const meta = PROVIDER_META[provider];
   const { skipPermissions, providerArgs } = useSettings.getState().settings;
   return [

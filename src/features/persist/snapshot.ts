@@ -95,10 +95,13 @@ export function parseStateFile(text: string): ParseResult {
 export function snapshotState(
   s: AppState,
   liveCwd: (paneId: string) => string | undefined,
+  /** 셸 pane 안에서 직접 띄운 AI라면 복원 때 다시 띄울 agent 스펙 (없으면 undefined) */
+  asAgent?: (paneId: string) => Partial<PaneSpec> | undefined,
 ): StateFile {
   const panes: Record<string, PaneSpec> = {};
   for (const [id, p] of Object.entries(s.panes)) {
-    panes[id] = { ...p, cwd: liveCwd(id) ?? p.cwd };
+    const agent = p.kind === 'shell' ? asAgent?.(id) : undefined;
+    panes[id] = { ...p, ...agent, cwd: liveCwd(id) ?? p.cwd };
   }
   return {
     version: STATE_VERSION,
