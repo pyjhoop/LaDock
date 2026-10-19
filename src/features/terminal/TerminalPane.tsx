@@ -75,6 +75,8 @@ export function TerminalPane({
   const termRef = useRef<Terminal | null>(null);
   const [active, setActive] = useState(false);
   const [exitCode, setExitCode] = useState<number | null>(null);
+  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  const pasteRef = useRef<() => void>(() => {});
   const onCloseRef = useRef(onClose);
   const copyRef = useRef(copyOnSelect);
   const onRendererRef = useRef(onRenderer);
@@ -234,9 +236,10 @@ export function TerminalPane({
       }
       return true;
     });
+    pasteRef.current = () => void paste();
     const onContext = (e: MouseEvent) => {
       e.preventDefault();
-      void paste();
+      setMenu({ x: e.clientX, y: e.clientY });
     };
     host.addEventListener('contextmenu', onContext);
     term.onSelectionChange(() => {
@@ -305,6 +308,21 @@ export function TerminalPane({
 
   useEffect(() => () => (paneKey ? clearActivity(paneKey) : undefined), [paneKey]);
 
+  // 우클릭 메뉴는 바깥 클릭 · Esc · 스크롤로 닫는다
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && close();
+    window.addEventListener('mousedown', close);
+    window.addEventListener('blur', close);
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('mousedown', close);
+      window.removeEventListener('blur', close);
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [menu]);
+
   return (
     <section className={`pane${focused ? ' focused' : ''}`} onMouseDownCapture={() => onFocus?.()}>
       <header className="pane-head">
@@ -356,6 +374,43 @@ export function TerminalPane({
         </span>
       </header>
       <div className="pane-body" ref={hostRef} />
+      {menu && (
+        <div
+          className="pane-menu"
+          style={{ left: menu.x, top: menu.y }}
+          onMouseDown={(e) => e.stopPropagation()}
+          onContextMenu={(e) => e.preventDefault()}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setMenu(null);
+              onSplit?.('row');
+            }}
+          >
+            우측 분할
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMenu(null);
+              onSplit?.('col');
+            }}
+          >
+            하단 분할
+          </button>
+          <hr />
+          <button
+            type="button"
+            onClick={() => {
+              setMenu(null);
+              pasteRef.current();
+            }}
+          >
+            붙여넣기
+          </button>
+        </div>
+      )}
     </section>
   );
 }
