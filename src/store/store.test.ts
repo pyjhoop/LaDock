@@ -15,6 +15,17 @@ const win = (s: AppState) => ops.activeWindow(ops.activeSession(s));
 describe('tree', () => {
   const p = (paneId: string) => ({ type: 'pane' as const, paneId });
 
+  it('computeLayout: 비율대로 사각형을 나누고 분할선을 만든다', () => {
+    let root = tree.split(p('a'), 'a', 'row', 'b');
+    root = tree.split(root, 'b', 'col', 'c');
+    root = tree.setRatio(root, [], 0.25);
+    const l = tree.computeLayout(root);
+    expect(l.panes.a).toEqual({ x: 0, y: 0, w: 0.25, h: 1 });
+    expect(l.panes.b).toEqual({ x: 0.25, y: 0, w: 0.75, h: 0.5 });
+    expect(l.panes.c).toEqual({ x: 0.25, y: 0.5, w: 0.75, h: 0.5 });
+    expect(l.dividers.map((d) => d.path)).toEqual([[], ['b']]);
+  });
+
   it('분할 → 닫기 시 형제가 부모 자리로 승격된다', () => {
     let root = tree.split(p('a'), 'a', 'row', 'b');
     root = tree.split(root, 'b', 'col', 'c');

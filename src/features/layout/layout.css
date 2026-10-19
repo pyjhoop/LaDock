@@ -1,0 +1,30 @@
+.workspace {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+.win-layout {
+  position: absolute;
+  inset: 0;
+}
+.pane-slot {
+  position: absolute;
+}
+.divider {
+  position: absolute;
+  z-index: 2;
+}
+.divider.row {
+  width: 6px;
+  cursor: col-resize;
+}
+.divider.col {
+  height: 6px;
+  cursor: row-resize;
+}
+.divider:hover,
+body[data-dragging] .divider:active {
+  background: var(--accent);
+  opacity: 0.5;
+}

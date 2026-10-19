@@ -23,10 +23,18 @@ export interface TerminalPaneProps {
   /** 선택하면 자동 복사. 기본 끔 (M3-02 설정 연결 전까지 prop). */
   copyOnSelect?: boolean;
   onClose?: () => void;
+  /** 포커스된 pane인가 (테두리 강조 + 키 입력 포커스) */
+  focused?: boolean;
+  zoomed?: boolean;
+  onFocus?: () => void;
+  onSplit?: (dir: 'row' | 'col') => void;
+  onToggleZoom?: () => void;
   /** 렌더러가 정해지거나 바뀔 때 알린다 (M0-04 검증용). */
   onRenderer?: (renderer: 'webgl' | 'dom') => void;
 }
 
+/** 분할선 드래그가 끝났을 때 모든 pane이 크기를 다시 맞추게 하는 이벤트 */
+export const REFIT_EVENT = 'ladock:refit';
 const ACTIVITY_MS = 1000;
 const RESIZE_DEBOUNCE_MS = 80;
 const encoder = new TextEncoder();
@@ -41,9 +49,15 @@ export function TerminalPane({
   envRemove,
   copyOnSelect = false,
   onClose,
+  focused = false,
+  zoomed = false,
+  onFocus,
+  onSplit,
+  onToggleZoom,
   onRenderer,
 }: TerminalPaneProps) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const termRef = useRef<Terminal | null>(null);
   const [active, setActive] = useState(false);
   const [exitCode, setExitCode] = useState<number | null>(null);
   const onCloseRef = useRef(onClose);
@@ -75,6 +89,7 @@ export function TerminalPane({
     term.loadAddon(new Unicode11Addon());
     term.unicode.activeVersion = '11';
     term.open(host);
+    termRef.current = term;
     try {
       const gl = new WebglAddon();
       gl.onContextLoss(() => {
@@ -204,16 +219,21 @@ export function TerminalPane({
       }
     });
 
-    // 크기
+    // 크기. 분할선 드래그 중에는 PTY 리사이즈를 미루고, 끝나면 REFIT_EVENT로 한 번 맞춘다.
+    const refit = () => {
+      if (host.clientWidth === 0 || host.clientHeight === 0) return;
+      fit.fit();
+      if (paneId !== null) void ptyResize(paneId, term.cols, term.rows).catch(() => {});
+    };
     const ro = new ResizeObserver(() => {
       clearTimeout(resizeTimer);
       resizeTimer = window.setTimeout(() => {
-        if (host.clientWidth === 0 || host.clientHeight === 0) return;
-        fit.fit();
-        if (paneId !== null) void ptyResize(paneId, term.cols, term.rows).catch(() => {});
+        if (document.body.dataset.dragging) return;
+        refit();
       }, RESIZE_DEBOUNCE_MS);
     });
     ro.observe(host);
+    window.addEventListener(REFIT_EVENT, refit);
 
     const unwatchTheme = watchTheme(() => {
       term.options.theme = readTerminalTheme();
@@ -226,6 +246,8 @@ export function TerminalPane({
       clearTimeout(activityTimer);
       clearTimeout(resizeTimer);
       ro.disconnect();
+      window.removeEventListener(REFIT_EVENT, refit);
+      termRef.current = null;
       unwatchTheme();
       host.removeEventListener('contextmenu', onContext);
       void unlistenExit.then((un) => un());
@@ -239,8 +261,12 @@ export function TerminalPane({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [profileId, cwd, command]);
 
+  useEffect(() => {
+    if (focused) termRef.current?.focus();
+  }, [focused]);
+
   return (
-    <section className="pane">
+    <section className={`pane${focused ? ' focused' : ''}`} onMouseDownCapture={() => onFocus?.()}>
       <header className="pane-head">
         <span className="pane-icon" aria-hidden>
           ❯_
@@ -253,7 +279,15 @@ export function TerminalPane({
         />
         <span className="spacer" />
         <span className="pane-actions">
-          {/* M1-02에서 분할 · 줌 버튼 연결 */}
+          <button type="button" title="좌우 분할" onClick={() => onSplit?.('row')}>
+            ▥
+          </button>
+          <button type="button" title="상하 분할" onClick={() => onSplit?.('col')}>
+            ▤
+          </button>
+          <button type="button" title={zoomed ? '줌 해제' : '줌'} onClick={() => onToggleZoom?.()}>
+            {zoomed ? '⤡' : '⤢'}
+          </button>
           <button type="button" title="닫기" onClick={() => onClose?.()}>
             ✕
           </button>

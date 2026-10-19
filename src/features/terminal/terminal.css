@@ -70,3 +70,9 @@
     display: none;
   }
 }
+.pane {
+  border: 1px solid transparent;
+}
+.pane.focused {
+  border-color: var(--accent);
+}

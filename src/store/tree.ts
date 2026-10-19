@@ -73,3 +73,51 @@ export function setRatio(root: LayoutNode, path: SplitPath, ratio: number): Layo
     ? { ...root, a: setRatio(root.a, rest, ratio) }
     : { ...root, b: setRatio(root.b, rest, ratio) };
 }
+
+/** 0–1 비율 좌표계의 사각형 */
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface Divider {
+  /** 이 분할선이 속한 split의 경로 */
+  path: SplitPath;
+  dir: 'row' | 'col';
+  /** split 전체 영역 (드래그 비율 계산용) */
+  area: Rect;
+  ratio: number;
+}
+
+export interface Layout {
+  panes: Record<string, Rect>;
+  dividers: Divider[];
+}
+
+/**
+ * 트리를 사각형으로 펼친다. pane을 트리 모양대로 중첩 렌더링하면 분할할 때 React가
+ * 터미널을 다시 마운트(= PTY 종료)하므로, pane은 평탄하게 그리고 위치만 계산한다.
+ */
+export function computeLayout(root: LayoutNode, area: Rect = { x: 0, y: 0, w: 1, h: 1 }): Layout {
+  const out: Layout = { panes: {}, dividers: [] };
+  const walk = (node: LayoutNode, rect: Rect, path: SplitPath) => {
+    if (node.type === 'pane') {
+      out.panes[node.paneId] = rect;
+      return;
+    }
+    out.dividers.push({ path, dir: node.dir, area: rect, ratio: node.ratio });
+    if (node.dir === 'row') {
+      const aw = rect.w * node.ratio;
+      walk(node.a, { ...rect, w: aw }, [...path, 'a']);
+      walk(node.b, { ...rect, x: rect.x + aw, w: rect.w - aw }, [...path, 'b']);
+    } else {
+      const ah = rect.h * node.ratio;
+      walk(node.a, { ...rect, h: ah }, [...path, 'a']);
+      walk(node.b, { ...rect, y: rect.y + ah, h: rect.h - ah }, [...path, 'b']);
+    }
+  };
+  walk(root, area, []);
+  return out;
+}
