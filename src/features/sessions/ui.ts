@@ -56,9 +56,16 @@ export const PROVIDER_GLYPH: Record<ProviderId, { glyph: string; color: string }
   codex: { glyph: '◎', color: '#8fa1b3' },
 };
 
-/** pane들에서 실행 중인 AI provider를 중복 없이 모은다 */
-export function providersOf(panes: (PaneSpec | undefined)[]): ProviderId[] {
+/** pane들에서 실행 중인 AI provider를 중복 없이 모은다. detected: 일반 셸에서 직접 띄운 것 */
+export function providersOf(
+  panes: (PaneSpec | undefined)[],
+  detected: Record<string, ProviderId> = {},
+): ProviderId[] {
   const set = new Set<ProviderId>();
-  for (const p of panes) if (p?.kind === 'agent' && p.provider) set.add(p.provider);
+  for (const p of panes) {
+    if (!p) continue;
+    const id = p.kind === 'agent' ? p.provider : detected[p.id];
+    if (id) set.add(id);
+  }
   return [...set];
 }

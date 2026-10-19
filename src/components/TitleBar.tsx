@@ -37,7 +37,6 @@ export function TitleBar() {
         <IconMenu />
       </button>
       <div className="brand" data-tauri-drag-region>
-        <span className="mark" />
         <span className="label">LaDock</span>
       </div>
       <TitleTabs />

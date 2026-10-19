@@ -6,17 +6,13 @@ import { useStore } from '../../store/store';
 import type { AppState } from '../../store/types';
 import { loadSettings } from '../settings/settings';
 import { getPaneCwd } from '../terminal/registry';
-import { agentPanes, applyResume, fixMissingCwds, parseStateFile, snapshotState } from './snapshot';
+import { applyResume, fixMissingCwds, parseStateFile, snapshotState } from './snapshot';
 
 const DEBOUNCE_MS = 1000;
 /** cwd는 store 밖(OSC 7)에서 바뀌므로 주기적으로도 확인한다 */
 const POLL_MS = 15000;
 
-export type RestorePhase =
-  | { phase: 'loading' }
-  /** 이어하기를 물을 AI pane이 있다 */
-  | { phase: 'ask'; state: AppState; agents: number }
-  | { phase: 'ready' };
+export type RestorePhase = { phase: 'loading' } | { phase: 'ready' };
 
 interface RestoreUi {
   restore: RestorePhase;
@@ -70,10 +66,8 @@ export async function loadSaved(): Promise<void> {
         }`,
       });
     }
-    const state = await checkCwds(parsed.state);
-    const agents = agentPanes(state).length;
-    if (agents === 0) return commit(state);
-    ui.set({ restore: { phase: 'ask', state, agents } });
+    // 묻지 않고 항상 이전 상태 그대로 이어서 연다
+    commit(applyResume(await checkCwds(parsed.state), true));
   } catch (e) {
     console.error('state_load 실패', e);
     ui.set({
@@ -81,12 +75,6 @@ export async function loadSaved(): Promise<void> {
       notice: '저장된 레이아웃을 읽지 못해 새 세션으로 시작합니다',
     });
   }
-}
-
-/** 이어하기 선택 후 확정 */
-export function chooseResume(resume: boolean) {
-  const r = useRestore.getState().restore;
-  if (r.phase === 'ask') commit(applyResume(r.state, resume));
 }
 
 let lastSaved = '';
@@ -112,13 +100,11 @@ export function startAutoSave(): () => void {
   const poll = setInterval(() => void save(), POLL_MS);
   let unlisten: (() => void) | undefined;
   let disposed = false;
-  const win = getCurrentWindow();
-  void win
-    .onCloseRequested(async (e) => {
-      e.preventDefault();
+  // 닫기는 트레이로 숨기기만 한다(Rust). 숨기기 직전에 저장해 둔다.
+  void getCurrentWindow()
+    .onCloseRequested(async () => {
       clearTimeout(timer);
       await save();
-      await win.destroy();
     })
     .then((u) => (disposed ? u() : (unlisten = u)));
   return () => {

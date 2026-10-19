@@ -4,7 +4,7 @@ import { useStore } from '../../store/store';
 import { leaves } from '../../store/tree';
 import { useKeys } from '../keys/keys';
 import { Glyphs } from './TitleTabs';
-import { createSessionAndRename, providersOf } from './ui';
+import { createSessionAndRename } from './ui';
 
 type Item = { sessionId: string; windowId: string | null };
 
@@ -76,7 +76,7 @@ export function TreeOverlay() {
                   <span className="sdot" style={{ ['--sc' as string]: sess.color }} />
                   <span className="name">{sess.name}</span>
                   <span className="meta">
-                    <Glyphs ids={providersOf(ids.map((id) => state.panes[id]))} />
+                    <Glyphs panes={ids.map((id) => state.panes[id])} />
                     {sess.windows.length}탭
                   </span>
                 </button>
@@ -90,7 +90,7 @@ export function TreeOverlay() {
                   {wi + 1}: {windowLabel(state, w)}
                 </span>
                 <span className="meta">
-                  <Glyphs ids={providersOf(leaves(w.root).map((id) => state.panes[id]))} />
+                  <Glyphs panes={leaves(w.root).map((id) => state.panes[id])} />
                   {leaves(w.root).length}p
                 </span>
               </button>

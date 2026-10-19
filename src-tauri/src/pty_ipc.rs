@@ -132,3 +132,16 @@ pub fn pty_ack(
     }
     Ok(())
 }
+
+/// 각 pane의 셸 아래에서 실행 중인 AI CLI. pane id → provider id (없으면 빠진다).
+#[tauri::command]
+pub fn pty_detect_agents(
+    registry: State<'_, PtyRegistry>,
+    pane_ids: Vec<PaneId>,
+) -> HashMap<PaneId, &'static str> {
+    let roots: Vec<(PaneId, u32)> = pane_ids
+        .into_iter()
+        .filter_map(|id| Some((id, registry.get(id).ok()?.pid()?)))
+        .collect();
+    crate::agent_detect::running_agents(&roots)
+}

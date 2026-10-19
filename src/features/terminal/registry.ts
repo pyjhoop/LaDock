@@ -9,6 +9,9 @@ export const unregisterPty = (paneKey: string, ptyId: number) => {
   if (ptys.get(paneKey) === ptyId) ptys.delete(paneKey);
 };
 
+/** (store pane id, PTY id) 목록 */
+export const ptyEntries = () => [...ptys.entries()];
+
 export function killPanePty(paneKey: string) {
   const id = ptys.get(paneKey);
   if (id === undefined) return;

@@ -67,6 +67,7 @@ pub struct PtyHandle {
     writer: Mutex<Box<dyn Write + Send>>,
     killer: Mutex<Box<dyn portable_pty::ChildKiller + Send + Sync>>,
     flow: Arc<Flow>,
+    pid: Option<u32>,
 }
 
 impl PtyHandle {
@@ -97,6 +98,7 @@ impl PtyHandle {
         let mut child = pair.slave.spawn_command(cmd).map_err(|e| e.to_string())?;
         drop(pair.slave);
 
+        let pid = child.process_id();
         let killer = child.clone_killer();
         let mut reader = pair.master.try_clone_reader().map_err(|e| e.to_string())?;
         let writer = pair.master.take_writer().map_err(|e| e.to_string())?;
@@ -167,6 +169,7 @@ impl PtyHandle {
             writer: Mutex::new(writer),
             killer: Mutex::new(killer),
             flow,
+            pid,
         };
 
         // 종료 감시: 자식이 끝나면 ConPTY를 닫아 리더 EOF를 유도하고, 출력이 다 나간 뒤 on_exit.
@@ -200,6 +203,10 @@ impl PtyHandle {
                 .map_err(|e| e.to_string()),
             None => Ok(()),
         }
+    }
+
+    pub fn pid(&self) -> Option<u32> {
+        self.pid
     }
 
     pub fn kill(&self) {

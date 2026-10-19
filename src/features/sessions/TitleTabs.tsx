@@ -2,12 +2,16 @@ import { IconChevD, IconClose, IconPlus } from '../../components/icons';
 import { activeSession, windowLabel } from '../../store/ops';
 import { useStore } from '../../store/store';
 import { leaves } from '../../store/tree';
+import type { PaneSpec } from '../../store/types';
+import { useDetected } from '../terminal/detect';
 import { useKeys } from '../keys/keys';
 import { InlineRename } from './InlineRename';
 import { PROVIDER_GLYPH, providersOf, useSessionsUi } from './ui';
 import './sessions.css';
 
-export function Glyphs({ ids }: { ids: ReturnType<typeof providersOf> }) {
+export function Glyphs({ panes }: { panes: (PaneSpec | undefined)[] }) {
+  const detected = useDetected((s) => s.byPane);
+  const ids = providersOf(panes, detected);
   return (
     <>
       {ids.map((id) => (
@@ -99,7 +103,7 @@ export function TitleTabs() {
                 {windowLabel(state, w)}
               </span>
               <span className="tglyphs">
-                <Glyphs ids={providersOf(leaves(w.root).map((id) => state.panes[id]))} />
+                <Glyphs panes={leaves(w.root).map((id) => state.panes[id])} />
               </span>
               <span
                 className="x"

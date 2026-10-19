@@ -5,7 +5,7 @@ import { leaves } from '../../store/tree';
 import { InlineRename } from './InlineRename';
 import { shellGlyph, useShells } from './shells';
 import { Glyphs } from './TitleTabs';
-import { createSessionAndRename, providersOf, useSessionsUi } from './ui';
+import { createSessionAndRename, useSessionsUi } from './ui';
 
 /** 활성 세션만 펼쳐서 탭 목록을 보여주는 세션 트리 */
 export function Sidebar() {
@@ -79,7 +79,7 @@ export function Sidebar() {
                     <span className="sdot" style={{ ['--sc' as string]: sess.color }} />
                     <span className="name">{sess.name}</span>
                     <span className="meta">
-                      <Glyphs ids={providersOf(paneIds.map((id) => state.panes[id]))} />
+                      <Glyphs panes={paneIds.map((id) => state.panes[id])} />
                       <span>{sess.windows.length}탭</span>
                     </span>
                   </button>
@@ -107,9 +107,7 @@ export function Sidebar() {
                           <span className="num">{i + 1}</span>
                           <span className="name">{windowLabel(state, w)}</span>
                           <span className="meta">
-                            <Glyphs
-                              ids={providersOf(leaves(w.root).map((id) => state.panes[id]))}
-                            />
+                            <Glyphs panes={leaves(w.root).map((id) => state.panes[id])} />
                             <span>{leaves(w.root).length}p</span>
                           </span>
                         </button>
