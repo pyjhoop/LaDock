@@ -121,3 +121,65 @@ export function computeLayout(root: LayoutNode, area: Rect = { x: 0, y: 0, w: 1,
   walk(root, area, []);
   return out;
 }
+
+export type Direction = 'left' | 'right' | 'up' | 'down';
+
+const EPS = 1e-6;
+
+/** 화면상 dir 쪽에서 가장 가까운 pane (맞닿은 방향의 후보 중 중심 거리 최소). 없으면 null. */
+export function neighborPane(layout: Layout, paneId: string, dir: Direction): string | null {
+  const cur = layout.panes[paneId];
+  if (!cur) return null;
+  const horizontal = dir === 'left' || dir === 'right';
+  const center = (r: Rect) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2 });
+  const c0 = center(cur);
+  let best: string | null = null;
+  let bestDist = Infinity;
+  for (const [id, r] of Object.entries(layout.panes)) {
+    if (id === paneId) continue;
+    const inDirection =
+      dir === 'left'
+        ? r.x + r.w <= cur.x + EPS
+        : dir === 'right'
+          ? r.x >= cur.x + cur.w - EPS
+          : dir === 'up'
+            ? r.y + r.h <= cur.y + EPS
+            : r.y >= cur.y + cur.h - EPS;
+    if (!inDirection) continue;
+    const overlap = horizontal
+      ? Math.min(r.y + r.h, cur.y + cur.h) - Math.max(r.y, cur.y)
+      : Math.min(r.x + r.w, cur.x + cur.w) - Math.max(r.x, cur.x);
+    if (overlap <= EPS) continue;
+    const c = center(r);
+    const dist = (c.x - c0.x) ** 2 + (c.y - c0.y) ** 2;
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = id;
+    }
+  }
+  return best;
+}
+
+export const RESIZE_STEP = 0.05;
+
+/** paneId에서 가장 가까운, dir 축의 조상 split 비율을 delta만큼 바꾼다. 해당 split이 없으면 그대로. */
+export function resizeFocused(
+  root: LayoutNode,
+  paneId: string,
+  dir: Direction,
+  delta = RESIZE_STEP,
+): LayoutNode {
+  const path = findPath(root, paneId);
+  if (!path) return root;
+  const axis = dir === 'left' || dir === 'right' ? 'row' : 'col';
+  const sign = dir === 'right' || dir === 'down' ? 1 : -1;
+  for (let depth = path.length - 1; depth >= 0; depth--) {
+    const ancestor = path.slice(0, depth);
+    let node: LayoutNode = root;
+    for (const step of ancestor) node = (node as Extract<LayoutNode, { type: 'split' }>)[step];
+    if (node.type === 'split' && node.dir === axis) {
+      return setRatio(root, ancestor, node.ratio + sign * delta);
+    }
+  }
+  return root;
+}

@@ -1,0 +1,71 @@
+.prefix-badge {
+  position: fixed;
+  right: 12px;
+  bottom: 12px;
+  z-index: 50;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: var(--bg);
+  font: 700 11px var(--mono);
+  letter-spacing: 0.05em;
+}
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  background: rgb(0 0 0 / 0.45);
+}
+.overlay-box {
+  width: min(520px, 92vw);
+  max-height: 86vh;
+  overflow: auto;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel);
+}
+.overlay-box.small {
+  width: min(360px, 92vw);
+}
+.overlay-box h2 {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+.overlay-box .muted {
+  margin-bottom: 10px;
+  color: var(--muted);
+}
+.overlay-box table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.overlay-box td {
+  padding: 3px 0;
+}
+.overlay-box td:first-child {
+  width: 150px;
+}
+.overlay-box kbd {
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--panel-2);
+  font: 12px var(--mono);
+}
+.overlay-box .ext {
+  margin-left: 8px;
+  color: var(--accent);
+  font-size: 11px;
+}
+.overlay-box input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+}

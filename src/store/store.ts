@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { killPanePty } from '../features/terminal/registry';
 import * as ops from './ops';
+import type { Direction } from './tree';
 import type { AppState, SplitPath } from './types';
 
 interface Actions {
@@ -8,6 +9,8 @@ interface Actions {
   splitFocused: (dir: 'row' | 'col') => void;
   closePane: (paneId: string) => void;
   setRatio: (windowId: string, path: SplitPath, ratio: number) => void;
+  moveFocus: (dir: Direction) => void;
+  resizeFocused: (dir: Direction) => void;
   toggleZoom: () => void;
   newWindow: () => void;
   renameWindow: (windowId: string, name: string | null) => void;
@@ -38,6 +41,8 @@ export const useStore = create<AppState & Actions>()((set) => {
     splitFocused: (dir) => apply((s) => ops.splitFocused(s, dir)),
     closePane: (id) => apply((s) => ops.closePane(s, id)),
     setRatio: (w, p, r) => apply((s) => ops.setRatio(s, w, p, r)),
+    moveFocus: (d) => apply((s) => ops.moveFocus(s, d)),
+    resizeFocused: (d) => apply((s) => ops.resizeFocused(s, d)),
     toggleZoom: () => apply(ops.toggleZoom),
     newWindow: () => apply(ops.newWindow),
     renameWindow: (id, name) => apply((s) => ops.renameWindow(s, id, name)),

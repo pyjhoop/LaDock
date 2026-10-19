@@ -1,4 +1,4 @@
-import { ptyKill } from './pty';
+import { ptyKill, ptyWrite } from './pty';
 
 // store pane id → PTY id. TerminalPane이 spawn 직후 등록하고, store가 pane을 지울 때 kill한다.
 const ptys = new Map<string, number>();
@@ -14,4 +14,9 @@ export function killPanePty(paneKey: string) {
   if (id === undefined) return;
   ptys.delete(paneKey);
   void ptyKill(id).catch(() => {});
+}
+
+export function writePanePty(paneKey: string, data: string) {
+  const id = ptys.get(paneKey);
+  if (id !== undefined) void ptyWrite(id, new TextEncoder().encode(data)).catch(() => {});
 }

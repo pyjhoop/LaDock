@@ -167,6 +167,24 @@ export function setRatio(s: AppState, windowId: string, path: SplitPath, ratio: 
   };
 }
 
+/** 화면상 dir 쪽에서 가장 가까운 pane으로 포커스를 옮긴다. 줌 상태에서는 무시. */
+export function moveFocus(s: AppState, dir: tree.Direction): AppState {
+  const win = activeWindow(activeSession(s));
+  if (win.zoomed) return s;
+  const target = tree.neighborPane(tree.computeLayout(win.root), win.focusPaneId, dir);
+  return target ? focusPane(s, target) : s;
+}
+
+export function resizeFocused(s: AppState, dir: tree.Direction): AppState {
+  const sess = activeSession(s);
+  return mapSession(s, sess.id, (x) =>
+    mapWindow(x, x.activeWindowId, (w) => ({
+      ...w,
+      root: tree.resizeFocused(w.root, w.focusPaneId, dir),
+    })),
+  );
+}
+
 export function toggleZoom(s: AppState): AppState {
   const sess = activeSession(s);
   return mapSession(s, sess.id, (x) =>

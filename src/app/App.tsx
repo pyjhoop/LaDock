@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { TitleBar } from '../components/TitleBar';
+import { Overlays } from '../features/keys/Overlays';
+import { installKeyHandler } from '../features/keys/keys';
 import { Workspace } from '../features/layout/Workspace';
 import { TerminalPane } from '../features/terminal/TerminalPane';
 
@@ -39,12 +41,14 @@ function StressGrid({ count }: { count: number }) {
 }
 
 export function App() {
+  useEffect(() => installKeyHandler(), []);
   return (
     <div className="app">
       <TitleBar />
       <main className="main" style={stress ? { flexDirection: 'column' } : undefined}>
         {stress ? <StressGrid count={stress} /> : <Workspace />}
       </main>
+      <Overlays />
     </div>
   );
 }
