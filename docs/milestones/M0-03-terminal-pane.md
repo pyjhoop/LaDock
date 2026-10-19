@@ -22,14 +22,14 @@
 - pane 헤더가 좁으면 cwd → 활동 글자 → 보조 버튼 순서로 숨김 (container query)
 
 ## 완료 기준
-- [ ] pwsh에서 `ls`, `vim`(또는 `nvim`), `htop`류 전체화면 프로그램이 정상 표시
-- [ ] 창 크기를 바꿔도 줄이 깨지지 않음
-- [ ] 복사 · 붙여넣기 · 우클릭 붙여넣기 동작
-- [ ] 프로세스 종료 후 Enter로 재시작
+- [x] pwsh에서 `ls`, `vim`(또는 `nvim`), `htop`류 전체화면 프로그램이 정상 표시
+- [x] 창 크기를 바꿔도 줄이 깨지지 않음
+- [x] 복사 · 붙여넣기 · 우클릭 붙여넣기 동작
+- [x] 프로세스 종료 후 Enter로 재시작
 
 ## 작업 기록
 
 - 2026-10-19: `src/features/terminal/` 에 `TerminalPane.tsx` · `pty.ts`(IPC 래퍼) · `theme.ts`(CSS 토큰 → xterm 테마, data-theme/시스템 테마 변경 추적) 구현. `App.tsx`는 임시로 pwsh pane 하나를 띄움 (M1-02에서 교체).
 - xterm 6.0.0 + addon 5종 추가. WebGL 로드 실패 시 DOM 렌더러로 폴백.
 - 종료 후 Enter 재시작은 같은 xterm을 `reset()` 하고 `pty_spawn`을 다시 호출. 헤더 버튼은 닫기만 두고 분할 · 줌은 M1-02에서 연결.
-- `pnpm check` · `pnpm build` 통과. **완료 기준 4개는 `pnpm tauri dev`에서 직접 눈으로 확인해야 해서 아직 체크하지 않음** (vim/전체화면 표시, 창 리사이즈, 복붙, 재시작).
+- `pnpm check` · `pnpm build` 통과. 완료 기준 4개(vim/전체화면 표시, 창 리사이즈, 복붙, 재시작)는 Claude가 직접 실행해 보지 못했고, 사용자 지시로 완료 처리함.
