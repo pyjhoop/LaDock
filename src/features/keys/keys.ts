@@ -14,11 +14,8 @@ import {
 } from './keymap';
 
 export type Overlay =
-  | { kind: 'help' }
-  | { kind: 'rename'; target: 'session' | 'window'; id: string; value: string }
-  // 아래 둘은 자리만 잡아 둔다: 트리 오버레이는 M1-04, 실행 팔레트는 M2-02에서 그린다.
-  | { kind: 'tree' }
-  | { kind: 'palette' };
+  { kind: 'help' } | { kind: 'rename'; target: 'session' | 'window'; id: string; value: string };
+// 트리 오버레이(M1-04) · 실행 팔레트(M2-02)는 화면을 만들 때 여기에 추가한다.
 
 interface KeysState {
   prefix: PrefixSpec;
@@ -51,9 +48,9 @@ export function runCommand(cmd: Command) {
   const win = activeWindow(sess);
   switch (cmd.id) {
     case 'tree':
-      return keys.openOverlay({ kind: 'tree' });
     case 'palette':
-      return keys.openOverlay({ kind: 'palette' });
+      // 화면이 생기기 전(M1-04 / M2-02)에 상태만 열면 닫을 수 없어 이후 키가 먹통이 된다.
+      return;
     case 'help':
       return keys.openOverlay({ kind: 'help' });
     case 'newSession':

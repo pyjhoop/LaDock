@@ -62,3 +62,4 @@ psmux/tmux처럼 prefix 키로 세션 · 탭 · pane을 전부 키보드로 조�
 - 2026-10-19: **prefix 충돌 조사 — 미완.** 알려진 사실만 적는다(실행 확인 안 함): vim은 `Ctrl+B` = 페이지 위로, PSReadLine/readline emacs 모드는 `Ctrl+B` = 글자 왼쪽 이동, Claude Code는 `Ctrl+B`를 실행 중 명령 백그라운드 전환에 쓴다. prefix를 두 번 누르면 ``가 그대로 전달된다. Codex · Gemini CLI · agy는 확인하지 못했다.
 - 2026-10-19: 완료 기준 4개 **미확인** — `pnpm check`(typecheck · lint · format · 단위 테스트 21개)만 통과했고 `pnpm tauri dev`에서 직접 눌러 보지 않았다. 확인할 것: 키표 전체, 3단 이상 분할에서 포커스 이동, 한글 입력 모드, 충돌 조사. M1-02의 미확인 완료 기준도 이 키로 같이 확인할 수 있다.
 - 2026-10-19: 사용자가 `pnpm tauri dev`에서 직접 써 보고 동작 확인(키표, 포커스 이동, 한글 모드). M1-02의 3×2×3 · 분할선 드래그 기준도 같이 확인. 남은 것: prefix 충돌 조사(Codex · Gemini CLI · agy 실행 확인)와 M1-02의 pane 20개 기준.
+- 2026-10-19: 버그 수정 — `s`/`w`/`a`가 화면 없는 오버레이 상태를 열어 이후 prefix가 먹통이 됐다. 화면이 생기기 전까지 no-op으로 바꿨다. 수정 후 사용자 확인: Claude Code · Antigravity(`agy`) 안에서도 prefix 정상 동작. Codex · Gemini CLI는 미확인.
