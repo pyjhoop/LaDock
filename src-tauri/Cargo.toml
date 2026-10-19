@@ -1,6 +1,6 @@
 [package]
 name = "ladock"
-version = "1.2.0"
+version = "1.2.1"
 description = "LaDock - Windows용 개인 터미널"
 authors = ["LaOh"]
 edition = "2024"

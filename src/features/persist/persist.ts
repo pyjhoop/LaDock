@@ -100,11 +100,14 @@ export function startAutoSave(): () => void {
   const poll = setInterval(() => void save(), POLL_MS);
   let unlisten: (() => void) | undefined;
   let disposed = false;
-  // 닫기는 트레이로 숨기기만 한다(Rust). 숨기기 직전에 저장해 둔다.
-  void getCurrentWindow()
-    .onCloseRequested(async () => {
+  // 닫기는 종료가 아니라 트레이로 숨김. preventDefault를 안 하면 JS 쪽이 창을 destroy한다.
+  const win = getCurrentWindow();
+  void win
+    .onCloseRequested(async (e) => {
+      e.preventDefault();
       clearTimeout(timer);
       await save();
+      await win.hide();
     })
     .then((u) => (disposed ? u() : (unlisten = u)));
   return () => {
