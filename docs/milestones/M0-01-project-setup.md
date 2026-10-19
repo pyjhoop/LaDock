@@ -38,3 +38,4 @@
 - 2026-10-19 Prettier가 CLAUDE.md를 건드려서 `*.md`와 docs를 `.prettierignore`에 추가.
 - 2026-10-19 확인함: `pnpm check`(tsc·eslint·prettier·vitest) 통과, `cargo fmt/clippy -D warnings/test` 통과, `pnpm tauri dev`로 창 기동 및 다크 테마·타이틀바 렌더링 확인.
 - 2026-10-19 재확인(Win32 입력 자동화): 최대화 → 복원, 빈 영역 드래그(100,100 → 250,180 이동), 최소화, 닫기(프로세스 종료) 모두 동작. 테마 버튼 3회 클릭 시 배경 #0d1015(다크) → #eef0f3(라이트) → 라이트(시스템, OS 라이트) → #0d1015로 순환.
+- 2026-10-19 결정 D4: 앱 이름은 LaDock 유지.
