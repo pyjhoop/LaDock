@@ -70,6 +70,11 @@
     display: none;
   }
 }
+@container (max-width: 250px) {
+  .pane-actions .opt {
+    display: none;
+  }
+}
 .pane {
   border: 1px solid transparent;
 }

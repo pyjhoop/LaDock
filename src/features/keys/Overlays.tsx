@@ -85,10 +85,8 @@ function RenameOverlay({
 
 export function Overlays() {
   const overlay = useKeys((s) => s.overlay);
-  const prefixActive = useKeys((s) => s.prefixActive);
   return (
     <>
-      {prefixActive && <div className="prefix-badge">PREFIX</div>}
       {overlay?.kind === 'help' && <HelpOverlay />}
       {overlay?.kind === 'tree' && <TreeOverlay />}
       {overlay?.kind === 'rename' && (

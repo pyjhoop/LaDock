@@ -3,6 +3,7 @@ import { REFIT_EVENT, TerminalPane } from '../terminal/TerminalPane';
 import { useStore } from '../../store/store';
 import { computeLayout, type Divider } from '../../store/tree';
 import type { Window } from '../../store/types';
+import { useSessionsUi } from '../sessions/ui';
 import './layout.css';
 
 const pct = (n: number) => `${n * 100}%`;
@@ -61,6 +62,9 @@ function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
   const panes = useStore((s) => s.panes);
   const { focusPane, splitFocused, closePane, toggleZoom } = useStore.getState();
   const layout = computeLayout(win.root);
+  // 스택 모드(<640px)는 줌처럼 포커스 pane 하나만 보인다
+  const stack = useSessionsUi((s) => s.mode === 'narrow');
+  const single = win.zoomed || stack;
 
   return (
     <div className="win-layout" style={{ display: visible ? undefined : 'none' }}>
@@ -68,8 +72,8 @@ function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
         const spec = panes[id];
         if (!spec) return null;
         const focused = id === win.focusPaneId;
-        const hidden = win.zoomed && !focused;
-        const r = win.zoomed ? { x: 0, y: 0, w: 1, h: 1 } : rect;
+        const hidden = single && !focused;
+        const r = single ? { x: 0, y: 0, w: 1, h: 1 } : rect;
         return (
           <div
             key={id}
@@ -105,7 +109,7 @@ function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
           </div>
         );
       })}
-      {!win.zoomed &&
+      {!single &&
         layout.dividers.map((d) => (
           <DividerBar key={d.path.join('') || 'root'} windowId={win.id} divider={d} />
         ))}

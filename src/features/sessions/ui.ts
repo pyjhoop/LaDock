@@ -10,9 +10,19 @@ export type Renaming = {
   from: 'title' | 'side';
 } | null;
 
+/** 창 폭 구간: wide ≥1024 · mid 640–1023(사이드바=드로어) · narrow <640(스택 모드) */
+export type LayoutMode = 'wide' | 'mid' | 'narrow';
+
+export const layoutModeOf = (width: number): LayoutMode =>
+  width >= 1024 ? 'wide' : width >= 640 ? 'mid' : 'narrow';
+
 interface SessionsUi {
   renaming: Renaming;
   sidebarOpen: boolean;
+  mode: LayoutMode;
+  drawerOpen: boolean;
+  setMode: (m: LayoutMode) => void;
+  closeDrawer: () => void;
   startRename: (r: NonNullable<Renaming>) => void;
   stopRename: () => void;
   toggleSidebar: () => void;
@@ -21,9 +31,16 @@ interface SessionsUi {
 export const useSessionsUi = create<SessionsUi>()((set) => ({
   renaming: null,
   sidebarOpen: true,
+  mode: layoutModeOf(window.innerWidth),
+  drawerOpen: false,
+  setMode: (mode) => set({ mode, drawerOpen: false }),
+  closeDrawer: () => set({ drawerOpen: false }),
   startRename: (renaming) => set({ renaming }),
   stopRename: () => set({ renaming: null }),
-  toggleSidebar: () => set((s) => ({ sidebarOpen: !s.sidebarOpen })),
+  toggleSidebar: () =>
+    set((s) =>
+      s.mode === 'wide' ? { sidebarOpen: !s.sidebarOpen } : { drawerOpen: !s.drawerOpen },
+    ),
 }));
 
 /** 새 세션을 만들고 바로 이름 입력 상태로 들어간다 */

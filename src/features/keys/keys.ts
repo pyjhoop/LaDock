@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { activeSession, activeWindow } from '../../store/ops';
 import { useStore } from '../../store/store';
+import { leaves } from '../../store/tree';
 import { createSessionAndRename, useSessionsUi } from '../sessions/ui';
 import { writePanePty } from '../terminal/registry';
 import {
@@ -84,8 +85,16 @@ export function runCommand(cmd: Command) {
       return store.closeWindow(sess.id, win.id);
     case 'split':
       return store.splitFocused(cmd.dir);
-    case 'moveFocus':
+    case 'moveFocus': {
+      if (useSessionsUi.getState().mode === 'narrow') {
+        // 스택 모드: 칩 순서대로 순환
+        const ids = leaves(win.root);
+        const step = cmd.dir === 'right' || cmd.dir === 'down' ? 1 : -1;
+        const i = ids.indexOf(win.focusPaneId);
+        return store.focusPane(ids[(i + step + ids.length) % ids.length]);
+      }
       return store.moveFocus(cmd.dir);
+    }
     case 'resize':
       return store.resizeFocused(cmd.dir);
     case 'zoom':

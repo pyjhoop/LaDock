@@ -1,9 +1,12 @@
 import { useEffect, useState } from 'react';
+import { StatusBar } from '../components/StatusBar';
 import { TitleBar } from '../components/TitleBar';
 import { Overlays } from '../features/keys/Overlays';
 import { installKeyHandler } from '../features/keys/keys';
+import { PaneChips } from '../features/layout/PaneChips';
 import { Workspace } from '../features/layout/Workspace';
 import { Sidebar } from '../features/sessions/Sidebar';
+import { layoutModeOf, useSessionsUi } from '../features/sessions/ui';
 import { TerminalPane } from '../features/terminal/TerminalPane';
 
 // M0-04 검증용: `?stress=20`이면 터미널 N개를 띄우고 WebGL/DOM 렌더러 수를 보여준다.
@@ -43,6 +46,16 @@ function StressGrid({ count }: { count: number }) {
 
 export function App() {
   useEffect(() => installKeyHandler(), []);
+  const narrow = useSessionsUi((s) => s.mode === 'narrow');
+  useEffect(() => {
+    const onResize = () => {
+      const mode = layoutModeOf(window.innerWidth);
+      if (mode !== useSessionsUi.getState().mode) useSessionsUi.getState().setMode(mode);
+    };
+    onResize();
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   return (
     <div className="app">
       <TitleBar />
@@ -52,10 +65,14 @@ export function App() {
         ) : (
           <>
             <Sidebar />
-            <Workspace />
+            <div className="work">
+              {narrow && <PaneChips />}
+              <Workspace />
+            </div>
           </>
         )}
       </main>
+      <StatusBar />
       <Overlays />
     </div>
   );

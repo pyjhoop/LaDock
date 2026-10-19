@@ -279,10 +279,10 @@ export function TerminalPane({
         />
         <span className="spacer" />
         <span className="pane-actions">
-          <button type="button" title="좌우 분할" onClick={() => onSplit?.('row')}>
+          <button type="button" className="opt" title="좌우 분할" onClick={() => onSplit?.('row')}>
             ▥
           </button>
-          <button type="button" title="상하 분할" onClick={() => onSplit?.('col')}>
+          <button type="button" className="opt" title="상하 분할" onClick={() => onSplit?.('col')}>
             ▤
           </button>
           <button type="button" title={zoomed ? '줌 해제' : '줌'} onClick={() => onToggleZoom?.()}>

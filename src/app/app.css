@@ -29,7 +29,7 @@ svg {
 .app {
   display: grid;
   height: 100%;
-  grid-template-rows: 40px minmax(0, 1fr);
+  grid-template-rows: 40px minmax(0, 1fr) 26px;
 }
 .main {
   display: flex;
@@ -99,4 +99,119 @@ svg {
 .theme-btn:hover {
   border-color: var(--border-strong);
   color: var(--text);
+}
+
+.statusbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 6px 0 8px;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+  font: 11.5px var(--mono);
+  color: var(--muted);
+  min-width: 0;
+  white-space: nowrap;
+}
+.statusbar .prefix-chip {
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--panel-2);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  opacity: 0.45;
+}
+.statusbar .prefix-chip.on {
+  background: var(--accent);
+  color: var(--bg);
+  opacity: 1;
+}
+.statusbar .sess {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+}
+.statusbar .wins {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+.statusbar .wins .on {
+  color: var(--accent);
+}
+.statusbar .cwd {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.statusbar .grow {
+  flex: 1;
+}
+.statusbar .hints {
+  display: flex;
+  gap: 12px;
+}
+.statusbar kbd {
+  margin-right: 2px;
+  padding: 0 4px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--panel-2);
+  font: inherit;
+}
+.sb-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
+  color: var(--muted);
+}
+.sb-btn:hover {
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+/* 사이드바 드로어 (<1024px) */
+.sidebar.drawer {
+  position: fixed;
+  z-index: 40;
+  top: 40px;
+  bottom: 26px;
+  left: 0;
+  width: min(300px, 86vw);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 0.4);
+}
+.scrim {
+  position: fixed;
+  inset: 40px 0 26px;
+  z-index: 35;
+  background: rgb(5 8 12 / 0.4);
+}
+
+@media (max-width: 1023px) {
+  .statusbar .cwd,
+  .statusbar .hints .opt {
+    display: none;
+  }
+}
+@media (max-width: 639px) {
+  .win-btn,
+  .brand .label,
+  .statusbar .hints,
+  .statusbar .wins,
+  .tbar-sep,
+  .tab .tglyphs {
+    display: none;
+  }
+  .brand {
+    padding: 0 6px 0 4px;
+  }
+  .sess-btn {
+    max-width: 104px;
+    padding: 0 6px 0 8px;
+  }
+  .tab {
+    padding: 0 6px 0 9px;
+  }
 }

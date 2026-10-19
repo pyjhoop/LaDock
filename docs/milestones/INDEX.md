@@ -22,7 +22,7 @@
 | [M1-02](M1-02-split-layout.md) | 분할 레이아웃 렌더링 (드래그 리사이즈, 줌) | M1-01, M0-04 | ✅ |
 | [M1-03](M1-03-keybindings.md) | 키바인딩 (prefix, 포커스 이동, 도움말) | M1-02 | ✅ |
 | [M1-04](M1-04-session-tab-ui.md) | 세션 · 탭 UI (타이틀바, 사이드바 트리, 트리 오버레이) | M1-01, M1-03 | ✅ |
-| [M1-05](M1-05-statusbar-responsive.md) | 상태바 · 반응형 (드로어, 스택 모드) | M1-04 | ⬜ |
+| [M1-05](M1-05-statusbar-responsive.md) | 상태바 · 반응형 (드로어, 스택 모드) | M1-04 | ✅ |
 | [M1-06](M1-06-shell-profiles.md) | 셸 프로필 감지 (pwsh, cmd, Git Bash, WSL) | M0-02, M1-04 | ⬜ |
 
 ### M2 AI 구독·한도 — 구독을 알아서 인식하고 한도를 상태바에서 본다

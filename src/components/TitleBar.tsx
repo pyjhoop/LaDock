@@ -32,7 +32,7 @@ export function TitleBar() {
       </button>
       <div className="brand" data-tauri-drag-region>
         <span className="mark" />
-        LaDock
+        <span className="label">LaDock</span>
       </div>
       <TitleTabs />
       <div className="spacer" data-tauri-drag-region />

@@ -1,15 +1,3 @@
-.prefix-badge {
-  position: fixed;
-  right: 12px;
-  bottom: 12px;
-  z-index: 50;
-  padding: 2px 8px;
-  border-radius: 4px;
-  background: var(--accent);
-  color: var(--bg);
-  font: 700 11px var(--mono);
-  letter-spacing: 0.05em;
-}
 .overlay {
   position: fixed;
   inset: 0;
