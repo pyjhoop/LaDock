@@ -80,6 +80,11 @@ export function TerminalPane({
   const [active, setActive] = useState(false);
   const [exitCode, setExitCode] = useState<number | null>(null);
   const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  // 셸이 알려 준 현재 폴더. 초기 cwd가 바뀌면(=새 pane) 다시 그 값으로 시작한다.
+  const [live, setLive] = useState({ base: cwd, dir: cwd });
+  if (live.base !== cwd) setLive({ base: cwd, dir: cwd });
+  const liveCwd = live.dir;
+  const setLiveCwd = (dir: string) => setLive((s) => ({ ...s, dir }));
   const pasteRef = useRef<() => void>(() => {});
   const onCloseRef = useRef(onClose);
   const copyRef = useRef(copyOnSelect);
@@ -234,7 +239,10 @@ export function TerminalPane({
     // 셸이 OSC 7로 알려 주는 현재 폴더 — AI 실행 때 cwd를 물려주는 데 쓴다
     const osc7 = term.parser.registerOscHandler(7, (data) => {
       const dir = parseOsc7(data);
-      if (dir && paneKey) setPaneCwd(paneKey, dir);
+      if (dir) {
+        if (paneKey) setPaneCwd(paneKey, dir);
+        setLiveCwd(dir);
+      }
       return true;
     });
 
@@ -377,7 +385,7 @@ export function TerminalPane({
           {icon?.glyph ?? '❯_'}
         </span>
         <span className="pane-title">{title}</span>
-        <span className="pane-cwd">{cwd}</span>
+        <span className="pane-cwd">{liveCwd}</span>
         <span className={`activity${active ? ' busy' : ''}${exitCode !== null ? ' dead' : ''}`}>
           <span>{exitCode !== null ? '종료됨' : active ? '출력 중' : '대기'}</span>
         </span>
