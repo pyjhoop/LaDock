@@ -52,6 +52,9 @@ pub struct SpawnArgs {
     pub rows: u16,
     #[serde(default)]
     pub env_remove: Vec<String>,
+    /// true면 command를 프로필 셸 안에서 실행해 command가 끝나도 셸이 남는다.
+    #[serde(default)]
+    pub keep_shell: bool,
 }
 
 #[derive(Serialize, Clone)]
@@ -70,13 +73,21 @@ pub fn pty_spawn(
 ) -> Result<PaneId, String> {
     let pane_id = registry.next.fetch_add(1, Ordering::Relaxed) + 1;
     // command가 없으면 프로필(감지된 셸)로 해석한다. 명시한 args가 프로필 기본 인자보다 우선.
-    let (command, profile_args) = match args.command {
-        Some(c) => (c, vec![]),
-        None => crate::shells::resolve(&args.profile_id),
+    let (command, spawn_args) = match args.command {
+        Some(c) => match args.keep_shell {
+            true => {
+                crate::shells::wrap_in_shell(&args.profile_id, &c, &args.args.unwrap_or_default())
+            }
+            false => (c, args.args.unwrap_or_default()),
+        },
+        None => {
+            let (c, profile_args) = crate::shells::resolve(&args.profile_id);
+            (c, args.args.unwrap_or(profile_args))
+        }
     };
     let opts = SpawnOptions {
         command,
-        args: args.args.unwrap_or(profile_args),
+        args: spawn_args,
         cwd: args.cwd.map(PathBuf::from),
         cols: args.cols,
         rows: args.rows,

@@ -176,6 +176,27 @@ fn osc7_args() -> Vec<String> {
         .to_vec()
 }
 
+fn ps_quote(s: &str) -> String {
+    format!("'{}'", s.replace('\'', "''"))
+}
+
+/// AI CLI 같은 command를 프로필 셸 안에서 실행한다. command가 끝나면(`/exit` 등) 셸 프롬프트로 돌아온다.
+/// PowerShell 계열만 감싸고, 나머지 프로필은 command를 그대로 직접 실행한다.
+pub fn wrap_in_shell(profile_id: &str, command: &str, args: &[String]) -> (String, Vec<String>) {
+    if matches!(profile_id, "pwsh" | "powershell") {
+        let (path, _) = resolve(profile_id);
+        let call = std::iter::once(command)
+            .chain(args.iter().map(String::as_str))
+            .map(ps_quote)
+            .collect::<Vec<_>>()
+            .join(" ");
+        let script = format!("{OSC7_PROMPT}; & {call}");
+        let args = ["-NoLogo", "-NoExit", "-Command", &script].map(String::from);
+        return (path, args.to_vec());
+    }
+    (command.to_string(), args.to_vec())
+}
+
 #[tauri::command]
 pub fn shells_detect() -> Vec<ShellProfile> {
     cached().clone()

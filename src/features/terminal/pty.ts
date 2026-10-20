@@ -9,6 +9,7 @@ export interface SpawnArgs {
   cols: number;
   rows: number;
   envRemove?: string[];
+  keepShell?: boolean;
 }
 
 export function ptySpawn(args: SpawnArgs, onData: (data: Uint8Array) => void): Promise<number> {

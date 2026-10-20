@@ -23,6 +23,8 @@ export interface TerminalPaneProps {
   command?: string;
   args?: string[];
   envRemove?: string[];
+  /** command를 셸 안에서 실행해, command가 끝나도 셸(pane)은 남긴다 */
+  keepShell?: boolean;
   /** 헤더 아이콘 (agent pane의 provider 글리프 · 색). 없으면 셸 아이콘. */
   icon?: { glyph: string; color: string };
   /** 선택하면 자동 복사. 기본 끔 */
@@ -60,6 +62,7 @@ export function TerminalPane({
   command,
   args,
   envRemove,
+  keepShell,
   icon,
   copyOnSelect = false,
   fontFamily,
@@ -142,6 +145,7 @@ export function TerminalPane({
       args,
       cwd,
       envRemove,
+      keepShell,
       cols: term.cols,
       rows: term.rows,
     });

@@ -97,6 +97,7 @@ function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
               command={spec.command}
               args={spec.args}
               envRemove={envRemoveFor(spec)}
+              keepShell={spec.kind === 'agent'}
               fontFamily={fontFamily}
               fontSize={fontSize}
               copyOnSelect={copyOnSelect}
