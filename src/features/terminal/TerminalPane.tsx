@@ -259,6 +259,12 @@ export function TerminalPane({
       if (text) term.paste(text);
     };
     term.attachCustomKeyEventHandler((e) => {
+      // Ctrl+V: 셸/AI CLI에 ^V를 보내지 않고 직접 붙여넣는다 (브라우저 기본 붙여넣기와 겹치지 않게 막는다)
+      if (e.ctrlKey && !e.shiftKey && !e.altKey && e.code === 'KeyV') {
+        e.preventDefault();
+        if (e.type === 'keydown') void paste();
+        return false;
+      }
       if (e.type === 'keydown' && e.ctrlKey && e.shiftKey) {
         if (e.code === 'KeyC') {
           if (term.hasSelection()) void navigator.clipboard.writeText(term.getSelection());
