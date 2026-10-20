@@ -31,6 +31,12 @@ Windows용 개인 터미널 앱. psmux처럼 **세션 → 탭 → 분할 pane** 
 - **가볍게** 만든다. 기동 1초 이내가 목표이고, 의존성을 하나 늘릴 때마다 꼭 필요한지 따져본다.
 - AI 정보로 사이드바 공간을 차지하지 않는다. 구독 · 한도는 상태바에만 둔다.
 
+## 릴리스
+
+- 커밋 · 버전 올리기 · 태그 전에 **먼저 `git pull --rebase`와 `git ls-remote --tags origin`으로 원격 상태부터 확인**한다. 다른 곳에서 올린 커밋 · 태그(버전)와 겹치면 그 위에서 다음 버전을 정한다.
+- 버전은 `package.json` · `src-tauri/tauri.conf.json` · `src-tauri/Cargo.toml` · `src-tauri/Cargo.lock` 네 곳을 같이 올린다.
+- `v*` 태그를 푸시하면 GitHub Actions가 서명된 설치 파일을 빌드해 릴리스한다. 이미 푸시된 태그는 다시 만들지 않는다.
+
 ## 명령어
 
 - 개발 실행: `pnpm tauri dev`
