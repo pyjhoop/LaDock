@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { getVersion } from '@tauri-apps/api/app';
-import type { ThemeMode } from '../../app/theme';
+import { THEMES } from '../../app/theme';
 import { PROVIDER_META, PROVIDER_ORDER } from '../ai/providers';
 import { isModifierOnly, prefixLabel, type PrefixSpec } from '../keys/keymap';
 import { useKeys } from '../keys/keys';
@@ -10,12 +10,6 @@ import { useUpdate } from '../update/updater';
 import { useShells } from '../sessions/shells';
 import { FONT_SIZE_RANGE, prefixWarning, useSettings } from './settings';
 import './settings.css';
-
-const THEMES: { id: ThemeMode; label: string }[] = [
-  { id: 'dark', label: '다크' },
-  { id: 'light', label: '라이트' },
-  { id: 'system', label: '시스템' },
-];
 
 const BRIDGE_STATE = {
   connected: '연결됨',
@@ -396,7 +390,7 @@ export function SettingsPage() {
                 </div>
               </Row>
               <Row label="테마">
-                <div className="set-seg">
+                <div className="set-seg wrap">
                   {THEMES.map((t) => (
                     <button
                       key={t.id}

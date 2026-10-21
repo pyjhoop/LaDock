@@ -138,6 +138,13 @@
 .set-seg button + button {
   margin-left: -1px;
 }
+.set-seg.wrap {
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.set-seg.wrap button + button {
+  margin-left: 0;
+}
 .set-warn {
   color: var(--t-yellow, #e5a24a) !important;
 }

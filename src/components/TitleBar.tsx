@@ -1,19 +1,11 @@
-import type { ReactElement } from 'react';
 import { remoteClient } from '../features/remote/client';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { nextTheme, type ThemeMode } from '../app/theme';
+import { nextTheme, themeInfo } from '../app/theme';
 import { useSettings } from '../features/settings/settings';
 
 import { IconAuto, IconMenu, IconMoon, IconSun } from './icons';
 import { TitleTabs } from '../features/sessions/TitleTabs';
 import { useSessionsUi } from '../features/sessions/ui';
-
-const THEME_LABEL: Record<ThemeMode, string> = { dark: '다크', light: '라이트', system: '시스템' };
-const THEME_ICON: Record<ThemeMode, () => ReactElement> = {
-  dark: IconMoon,
-  light: IconSun,
-  system: IconAuto,
-};
 
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1 } as const;
 
@@ -22,7 +14,8 @@ export function TitleBar() {
   const win = getCurrentWindow();
   const toggleSidebar = useSessionsUi((s) => s.toggleSidebar);
 
-  const ThemeIcon = THEME_ICON[theme];
+  const info = themeInfo(theme);
+  const ThemeIcon = theme === 'system' ? IconAuto : info.dark ? IconMoon : IconSun;
   const cycleTheme = () => {
     useSettings.getState().update({ theme: nextTheme(theme) });
   };
@@ -45,7 +38,7 @@ export function TitleBar() {
       <button
         className="icon-btn"
         onClick={cycleTheme}
-        title={`테마: ${THEME_LABEL[theme]}`}
+        title={`테마: ${info.label} (클릭하면 다음 테마)`}
         aria-label="테마 전환"
       >
         <ThemeIcon />

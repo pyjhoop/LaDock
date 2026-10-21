@@ -1,11 +1,11 @@
-/* 토큰 출처: docs/design-mvp.html :root. 다크 기본, [data-theme]로 강제, 없으면 시스템을 따른다. */
+/* 토큰 출처: docs/design-mvp.html :root. [data-theme]로 테마를 고르고, 없으면 시스템을 따른다. 테마 목록은 theme.ts의 THEMES와 맞춘다. */
 :root {
-  --bg: #eef0f3;
-  --panel: #ffffff;
-  --panel-2: #f5f6f8;
-  --border: #d8dde4;
-  --border-strong: #c3cad3;
-  --text: #1a1f26;
+  --bg: #e4e7ec;
+  --panel: #f1f3f6;
+  --panel-2: #e9ecf0;
+  --border: #cfd5dd;
+  --border-strong: #b9c1cc;
+  --text: #1f252d;
   --muted: #5f6977;
   --accent: #0c8f83;
   --on-accent: #ffffff;
@@ -15,7 +15,7 @@
   --warn: #b97700;
   --off: #8a939f;
   --danger: #d14343;
-  --term-bg: #fbfbfc;
+  --term-bg: #f1f3f6;
   --term-fg: #1f2328;
   --t-dim: #7a828d;
   --t-green: #1a7f37;
@@ -55,6 +55,146 @@
   --t-red: #ff7b7b;
   --t-magenta: #c79bff;
   --shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  color-scheme: dark;
+}
+
+:root[data-theme='nord'] {
+  --bg: #242933;
+  --panel: #2e3440;
+  --panel-2: #353c4a;
+  --border: #3b4252;
+  --border-strong: #4c566a;
+  --text: #e5e9f0;
+  --muted: #9aa5b8;
+  --accent: #88c0d0;
+  --on-accent: #2e3440;
+  --amber: #ebcb8b;
+  --on-amber: #2e3440;
+  --ok: #a3be8c;
+  --warn: #ebcb8b;
+  --off: #6b7794;
+  --danger: #d9808a;
+  --term-bg: #2e3440;
+  --term-fg: #d8dee9;
+  --t-dim: #7b88a1;
+  --t-green: #a3be8c;
+  --t-blue: #81a1c1;
+  --t-yellow: #ebcb8b;
+  --t-red: #d9808a;
+  --t-magenta: #b48ead;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.4);
+  color-scheme: dark;
+}
+
+:root[data-theme='nord-light'] {
+  --bg: #dfe4ec;
+  --panel: #eceff4;
+  --panel-2: #e5e9f0;
+  --border: #d0d6e2;
+  --border-strong: #b8c1d1;
+  --text: #2e3440;
+  --muted: #566176;
+  --accent: #4c6f9c;
+  --on-accent: #ffffff;
+  --amber: #9a6b00;
+  --on-amber: #ffffff;
+  --ok: #5a8645;
+  --warn: #9a6b00;
+  --off: #8b95a8;
+  --danger: #b04a55;
+  --term-bg: #eceff4;
+  --term-fg: #2e3440;
+  --t-dim: #66718a;
+  --t-green: #4a7638;
+  --t-blue: #4c6f9c;
+  --t-yellow: #8f6a12;
+  --t-red: #b04a55;
+  --t-magenta: #8c5f87;
+  --shadow: 0 10px 30px rgba(46, 52, 64, 0.16);
+  color-scheme: light;
+}
+
+:root[data-theme='sepia'] {
+  --bg: #e8dfcc;
+  --panel: #f4ecd8;
+  --panel-2: #eee4cd;
+  --border: #d9cdb0;
+  --border-strong: #c5b794;
+  --text: #433a2c;
+  --muted: #75684f;
+  --accent: #2f7f6f;
+  --on-accent: #ffffff;
+  --amber: #a56a00;
+  --on-amber: #ffffff;
+  --ok: #4d8a3c;
+  --warn: #a56a00;
+  --off: #9a8f78;
+  --danger: #b8443a;
+  --term-bg: #f4ecd8;
+  --term-fg: #433a2c;
+  --t-dim: #85785f;
+  --t-green: #4d7c2f;
+  --t-blue: #2f6aa0;
+  --t-yellow: #8a6100;
+  --t-red: #b3392f;
+  --t-magenta: #8a4a9a;
+  --shadow: 0 10px 30px rgba(67, 58, 44, 0.16);
+  color-scheme: light;
+}
+
+:root[data-theme='mocha'] {
+  --bg: #181825;
+  --panel: #1e1e2e;
+  --panel-2: #262637;
+  --border: #313244;
+  --border-strong: #45475a;
+  --text: #cdd6f4;
+  --muted: #9399b2;
+  --accent: #94e2d5;
+  --on-accent: #11111b;
+  --amber: #f9e2af;
+  --on-amber: #11111b;
+  --ok: #a6e3a1;
+  --warn: #f9e2af;
+  --off: #6c7086;
+  --danger: #f38ba8;
+  --term-bg: #1e1e2e;
+  --term-fg: #cdd6f4;
+  --t-dim: #7f849c;
+  --t-green: #a6e3a1;
+  --t-blue: #89b4fa;
+  --t-yellow: #f9e2af;
+  --t-red: #f38ba8;
+  --t-magenta: #cba6f7;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  color-scheme: dark;
+}
+
+:root[data-theme='gruvbox'] {
+  --bg: #1d2021;
+  --panel: #282828;
+  --panel-2: #32302f;
+  --border: #3c3836;
+  --border-strong: #504945;
+  --text: #ebdbb2;
+  --muted: #a89984;
+  --accent: #8ec07c;
+  --on-accent: #1d2021;
+  --amber: #fabd2f;
+  --on-amber: #1d2021;
+  --ok: #b8bb26;
+  --warn: #fabd2f;
+  --off: #7c6f64;
+  --danger: #fb4934;
+  --term-bg: #282828;
+  --term-fg: #ebdbb2;
+  --t-dim: #928374;
+  --t-green: #b8bb26;
+  --t-blue: #83a598;
+  --t-yellow: #fabd2f;
+  --t-red: #fb4934;
+  --t-magenta: #d3869b;
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
   color-scheme: dark;
 }
 

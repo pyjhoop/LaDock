@@ -1,16 +1,24 @@
 import type { ITheme } from '@xterm/xterm';
 
+/** `#rrggbb` → rgba(). 해석할 수 없으면 그대로 돌려준다. */
+function withAlpha(hex: string, alpha: number): string {
+  const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+  if (!m) return hex;
+  const [r, g, b] = [m[1], m[2], m[3]].map((x) => parseInt(x, 16));
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 /** 앱 테마 토큰(CSS 변수)에서 xterm 색을 만든다. */
 export function readTerminalTheme(): ITheme {
   const css = getComputedStyle(document.documentElement);
   const v = (name: string) => css.getPropertyValue(name).trim();
-  const dark = css.colorScheme.includes('dark');
+  const accent = v('--accent');
   return {
     background: v('--term-bg'),
     foreground: v('--term-fg'),
     cursor: v('--accent'),
     cursorAccent: v('--term-bg'),
-    selectionBackground: dark ? 'rgba(60, 207, 189, 0.28)' : 'rgba(12, 143, 131, 0.22)',
+    selectionBackground: withAlpha(accent, css.colorScheme.includes('dark') ? 0.28 : 0.22),
     brightBlack: v('--t-dim'),
     green: v('--t-green'),
     brightGreen: v('--t-green'),
