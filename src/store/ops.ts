@@ -10,6 +10,11 @@ export const uid = (prefix: string) =>
 /** 새 세션 · 분할의 기본 셸. 설정(M3-02)이 바꾼다. */
 export const defaults = { profile: 'pwsh' };
 
+/** 셸이 알려 준 현재 폴더(OSC 7) 조회. terminal/registry가 채운다 (store가 terminal을 import하지 않도록). */
+export const liveCwd: { of: (paneId: string) => string | undefined } = { of: () => undefined };
+
+const cwdOf = (p: PaneSpec | undefined) => (p && liveCwd.of(p.id)) ?? p?.cwd ?? '';
+
 function newShellPane(profileId: string, cwd: string): PaneSpec {
   return { id: uid('p'), kind: 'shell', profileId, cwd };
 }
@@ -100,10 +105,10 @@ const without = (panes: Record<string, PaneSpec>, ids: string[]) => {
 
 const wrap = (i: number, n: number) => ((i % n) + n) % n;
 
-/** 포커스된 pane에서 cwd · 프로필을 물려받은 새 셸 pane */
+/** 포커스된 pane에서 현재 폴더 · 프로필을 물려받은 새 셸 pane */
 function inheritedPane(s: AppState, profileId?: string): PaneSpec {
   const f = focusedPane(s);
-  return newShellPane(profileId ?? f?.profileId ?? defaults.profile, f?.cwd ?? '');
+  return newShellPane(profileId ?? f?.profileId ?? defaults.profile, cwdOf(f));
 }
 
 // ── pane ─────────────────────────────────────────
@@ -278,7 +283,7 @@ export function newSession(s: AppState, name = `session-${s.sessions.length + 1}
     name,
     nextColor(s.sessions),
     f?.profileId ?? defaults.profile,
-    f?.cwd ?? '',
+    cwdOf(f),
   );
   return {
     sessions: [...s.sessions, session],

@@ -5,11 +5,22 @@ import { leaves } from '../../store/tree';
 import { PROVIDER_META } from '../ai/providers';
 import { useActivity } from '../terminal/activity';
 import { useDetected } from '../terminal/detect';
+import { usePaneCwds } from '../terminal/registry';
 import { TasksSection } from '../tasks/TasksSection';
 import { InlineRename } from './InlineRename';
 import { ItemMenu, useItemMenu } from './ItemMenu';
 import { Glyphs } from './TitleTabs';
 import { PROVIDER_GLYPH, createSessionAndRename, useSessionsUi } from './ui';
+
+/** 탭의 기본 경로: 맨 처음 pane의 현재 폴더 */
+function baseCwd(
+  state: ReturnType<typeof useStore.getState>,
+  w: Parameters<typeof windowLabel>[1],
+  live: Record<string, string>,
+): string {
+  const first = leaves(w.root)[0];
+  return (first && live[first]) || state.panes[first]?.cwd || '';
+}
 
 const STATE_LABEL = { working: '작업 중', done: '완료', idle: '대기' } as const;
 
@@ -22,6 +33,7 @@ export function Sidebar() {
   const renaming = useSessionsUi((s) => s.renaming);
   const detected = useDetected((s) => s.byPane);
   const activity = useActivity((s) => s.byPane);
+  const liveCwds = usePaneCwds((s) => s.byPane);
   // 세션 카드 펼침 여부(없으면 활성 세션만 펼침) · 섹션 접힘 여부
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [folded, setFolded] = useState({ sessions: false, agents: false });
@@ -169,6 +181,11 @@ export function Sidebar() {
                                 <Glyphs panes={leaves(w.root).map((id) => state.panes[id])} />
                                 <span>{leaves(w.root).length}p</span>
                               </span>
+                              {baseCwd(state, w, liveCwds) && (
+                                <span className="wcwd" title={baseCwd(state, w, liveCwds)}>
+                                  {baseCwd(state, w, liveCwds)}
+                                </span>
+                              )}
                             </button>
                           ),
                         )}

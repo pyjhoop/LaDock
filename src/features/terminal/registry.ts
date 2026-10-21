@@ -1,3 +1,5 @@
+import { create } from 'zustand';
+import { liveCwd } from '../../store/ops';
 import { ptyKill, ptyWrite } from './pty';
 
 // store pane id → PTY id. TerminalPane이 spawn 직후 등록하고, store가 pane을 지울 때 kill한다.
@@ -43,9 +45,23 @@ export function writePanePty(paneKey: string, data: string) {
 // store pane id → 셸이 OSC 7로 알려 준 현재 폴더. store에 넣으면 cwd가 바뀔 때 pane이 다시 만들어지므로 따로 둔다.
 const cwds = new Map<string, string>();
 
-export const setPaneCwd = (paneKey: string, cwd: string) => void cwds.set(paneKey, cwd);
+/** 같은 값을 화면(사이드바)에서 구독하기 위한 사본 */
+export const usePaneCwds = create<{ byPane: Record<string, string> }>()(() => ({ byPane: {} }));
+
+export const setPaneCwd = (paneKey: string, cwd: string) => {
+  cwds.set(paneKey, cwd);
+  usePaneCwds.setState((s) => ({ byPane: { ...s.byPane, [paneKey]: cwd } }));
+};
 export const getPaneCwd = (paneKey: string) => cwds.get(paneKey);
-export const clearPaneCwd = (paneKey: string) => void cwds.delete(paneKey);
+export const clearPaneCwd = (paneKey: string) => {
+  cwds.delete(paneKey);
+  usePaneCwds.setState((s) => {
+    const byPane = { ...s.byPane };
+    delete byPane[paneKey];
+    return { byPane };
+  });
+};
+liveCwd.of = getPaneCwd;
 
 /** OSC 7 페이로드(`file://host/C:/dir`) → Windows 경로. 해석할 수 없으면 null. */
 export function parseOsc7(data: string): string | null {
