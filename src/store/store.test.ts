@@ -186,3 +186,29 @@ describe('openPane (AI 실행)', () => {
     expect(win(s).focusPaneId).toBe('a2');
   });
 });
+
+describe('pane 순번', () => {
+  it('새 pane마다 가장 작은 빈 번호를 받고, 닫으면 그 번호를 다시 쓴다', () => {
+    useStore.setState(ops.createInitialState());
+    const nos = () =>
+      Object.values(useStore.getState().panes)
+        .map((p) => p.no)
+        .sort();
+    expect(nos()).toEqual([1]);
+    useStore.getState().splitFocused('row');
+    useStore.getState().splitFocused('col');
+    expect(nos()).toEqual([1, 2, 3]);
+    const second = Object.values(useStore.getState().panes).find((p) => p.no === 2)!;
+    useStore.getState().closePane(second.id);
+    expect(nos()).toEqual([1, 3]);
+    useStore.getState().splitFocused('row');
+    expect(nos()).toEqual([1, 2, 3]);
+  });
+
+  it('저장돼 있던 순번은 유지하고 없는 pane에만 붙인다', () => {
+    const s = ops.createInitialState();
+    const [only] = Object.values(s.panes);
+    const restored = { ...s, panes: { [only.id]: { ...only, no: 7 } } };
+    expect(ops.assignPaneNumbers(restored)).toBe(restored);
+  });
+});

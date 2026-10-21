@@ -43,9 +43,28 @@ export function createSession(
   };
 }
 
+/** 순번이 없는 pane에 가장 작은 빈 번호를 붙인다. 바뀐 게 없으면 같은 객체를 돌려준다. */
+export function assignPaneNumbers(s: AppState): AppState {
+  const missing = Object.values(s.panes).filter((p) => p.no === undefined);
+  if (missing.length === 0) return s;
+  const used = new Set(Object.values(s.panes).flatMap((p) => (p.no === undefined ? [] : [p.no])));
+  const panes = { ...s.panes };
+  let n = 1;
+  for (const p of missing) {
+    while (used.has(n)) n++;
+    used.add(n);
+    panes[p.id] = { ...p, no: n };
+  }
+  return { ...s, panes };
+}
+
 export function createInitialState(): AppState {
   const { session, pane } = createSession('main', SESSION_COLORS[0], defaults.profile, '');
-  return { sessions: [session], activeSessionId: session.id, panes: { [pane.id]: pane } };
+  return assignPaneNumbers({
+    sessions: [session],
+    activeSessionId: session.id,
+    panes: { [pane.id]: pane },
+  });
 }
 
 // ── 조회 ─────────────────────────────────────────

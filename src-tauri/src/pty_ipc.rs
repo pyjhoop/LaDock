@@ -55,6 +55,9 @@ pub struct SpawnArgs {
     /// true면 command를 프로필 셸 안에서 실행해 command가 끝나도 셸이 남는다.
     #[serde(default)]
     pub keep_shell: bool,
+    /// 화면에 보이는 pane 번호. 자식 프로세스에 `LADOCK_PANE`으로 알린다.
+    #[serde(default)]
+    pub pane_no: Option<u32>,
 }
 
 #[derive(Serialize, Clone)]
@@ -92,6 +95,7 @@ pub fn pty_spawn(
         cols: args.cols,
         rows: args.rows,
         env_remove: args.env_remove,
+        env: crate::panes::child_env(args.pane_no),
     };
     let (hub_app, err_app) = (app.clone(), app.clone());
     app.state::<Hub>().open(pane_id, opts.cols, opts.rows);

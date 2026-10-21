@@ -2,12 +2,14 @@ mod agent_detect;
 mod bridge;
 mod limits;
 mod notify;
+mod panes;
 mod persist;
 mod providers;
 mod pty;
 mod pty_ipc;
 mod remote;
 mod shells;
+mod skills;
 mod task_run;
 #[cfg(test)]
 mod watch_e2e;
@@ -75,6 +77,8 @@ pub fn run() {
                 use tauri::Emitter;
                 let _ = app.emit("claude-bridge://changed", &bridge);
             }
+            panes::clear_stale();
+            skills::install_background();
             remote::Remote::start_background(app.handle().clone());
             setup_tray(app)?;
             Ok(())
@@ -103,6 +107,9 @@ pub fn run() {
             remote::remote_regenerate_token,
             remote::remote_set_layout,
             remote::remote_rpc_reply,
+            panes::pane_dump,
+            panes::panes_index,
+            skills::skills_install,
             notify::notify_agent_done,
             shells::shells_detect,
             providers::providers_detect,

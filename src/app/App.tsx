@@ -9,6 +9,7 @@ import { SettingsPage } from '../features/settings/SettingsPage';
 import { remoteClient } from '../features/remote/client';
 import { KeyBar, RemoteGate } from '../features/remote/RemoteGate';
 import { startRemotePublish } from '../features/remote/publish';
+import { startShare } from '../features/share/share';
 import { installKeyHandler } from '../features/keys/keys';
 import { startSettingsApply } from '../features/settings/apply';
 import { startScheduler } from '../features/tasks/run';
@@ -63,6 +64,7 @@ export function App() {
   const Gate = remoteClient ? RemoteGate : RestoreGate;
   useEffect(() => installKeyHandler(), []);
   useEffect(() => (remoteClient ? undefined : startRemotePublish()), []);
+  useEffect(() => (remoteClient ? undefined : startShare()), []);
   const settingsOpen = useKeys((s) => s.overlay?.kind === 'settings');
   const taskLogOpen = useKeys((s) => s.overlay?.kind === 'taskLog');
   useEffect(() => startSettingsApply(), []);

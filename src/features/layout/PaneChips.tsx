@@ -25,7 +25,7 @@ export function PaneChips() {
             <span className="g" style={g ? { color: g.color } : undefined}>
               {g ? g.glyph : '❯_'}
             </span>
-            {i + 1} · {p.title ?? p.command ?? p.profileId}
+            {p.no ?? i + 1}
           </button>
         );
       })}

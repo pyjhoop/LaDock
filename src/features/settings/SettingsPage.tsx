@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { getVersion } from '@tauri-apps/api/app';
 import { THEMES } from '../../app/theme';
 import { PROVIDER_META, PROVIDER_ORDER } from '../ai/providers';
@@ -201,6 +202,67 @@ function UpdateField() {
         </button>
       </div>
       {status && <small className={phase === 'error' ? 'set-warn' : undefined}>{status}</small>}
+    </>
+  );
+}
+
+interface SkillResult {
+  platform: string;
+  state: 'installed' | 'updated' | 'current' | 'skipped' | 'foreign' | 'error';
+  detail?: string;
+}
+
+const SKILL_STATE = {
+  installed: '설치함',
+  updated: '갱신함',
+  current: '설치됨',
+  foreign: '같은 이름의 다른 스킬이 있어 건너뜀',
+  error: '실패',
+} as const;
+
+/** pane 읽기 스킬(ladock-panes)을 설치된 AI 플랫폼에 깐다. 앱을 켤 때마다 자동으로도 한다. */
+function SkillsField() {
+  const [results, setResults] = useState<SkillResult[] | null>(null);
+  const [busy, setBusy] = useState(false);
+  const install = async () => {
+    setBusy(true);
+    try {
+      setResults(await invoke<SkillResult[]>('skills_install'));
+    } catch (e) {
+      setResults([{ platform: '스킬', state: 'error', detail: String(e) }]);
+    } finally {
+      setBusy(false);
+    }
+  };
+  useEffect(() => {
+    void invoke<SkillResult[]>('skills_install').then(setResults, (e) =>
+      setResults([{ platform: '스킬', state: 'error', detail: String(e) }]),
+    );
+  }, []);
+  const shown = (results ?? []).filter((r) => r.state !== 'skipped');
+  return (
+    <>
+      <div className="set-line">
+        <span className="set-state">
+          {results === null
+            ? '확인하는 중…'
+            : shown.length === 0
+              ? '설치된 AI 플랫폼이 없어요'
+              : shown
+                  .map((r) => `${r.platform} ${SKILL_STATE[r.state as keyof typeof SKILL_STATE]}`)
+                  .join(' · ')}
+        </span>
+        <button type="button" className="set-btn" disabled={busy} onClick={() => void install()}>
+          다시 설치
+        </button>
+      </div>
+      {shown
+        .filter((r) => r.detail)
+        .map((r) => (
+          <small key={r.platform} className="set-warn">
+            {r.platform}: {r.detail}
+          </small>
+        ))}
     </>
   );
 }
@@ -419,6 +481,15 @@ export function SettingsPage() {
               </Row>
               <Row label="권한 확인 생략" hint="CLI의 권한 확인 건너뛰기 플래그">
                 <Toggle on={s.skipPermissions} onChange={(v) => update({ skipPermissions: v })} />
+              </Row>
+              <Row
+                label="pane 화면 공유"
+                hint="다른 AI가 pane 순번으로 화면을 읽을 수 있게 파일로 저장 (%APPDATA%\LaDock\panes)"
+              >
+                <Toggle on={s.sharePanes} onChange={(v) => update({ sharePanes: v })} />
+              </Row>
+              <Row label="pane 읽기 스킬" hint="Claude Code · Codex · Antigravity에 설치">
+                <SkillsField />
               </Row>
               {PROVIDER_ORDER.map((id) => (
                 <Row

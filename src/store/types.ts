@@ -14,6 +14,8 @@ export interface PaneSpec {
   /** 빈 문자열이면 셸 기본 위치 */
   cwd: string;
   title?: string;
+  /** 화면에 보이는 pane 순번. 앱 전체에서 유일하고, 닫으면 가장 작은 빈 번호부터 다시 쓴다. */
+  no?: number;
 }
 
 /** UI에서는 "탭" */

@@ -10,6 +10,8 @@ import { IconClose, IconSplitD, IconSplitR, IconUnzoom, IconZoom } from '../../c
 import { clearActivity, noteFocus, noteInput, noteOutput } from './activity';
 import { onPtyExit, ptyAck, ptyKill, ptyResize, ptySpawn, ptyWrite, type SpawnArgs } from './pty';
 import { remoteClient } from '../remote/client';
+import { createDumper } from '../share/share';
+import { useStore } from '../../store/store';
 import { clearPaneCwd, parseOsc7, registerPty, setPaneCwd, unregisterPty } from './registry';
 import { readTerminalTheme, watchTheme } from './theme';
 import './terminal.css';
@@ -75,6 +77,7 @@ export function TerminalPane({
   onToggleZoom,
   onRenderer,
 }: TerminalPaneProps) {
+  const paneNo = useStore((s) => (paneKey ? s.panes[paneKey]?.no : undefined));
   const hostRef = useRef<HTMLDivElement>(null);
   const termRef = useRef<Terminal | null>(null);
   const [active, setActive] = useState(false);
@@ -132,6 +135,7 @@ export function TerminalPane({
     }
     fit.fit();
 
+    const dumper = !remoteClient && paneKey ? createDumper(term, paneKey) : null;
     let disposed = false;
     let paneId: number | null = null;
     let exited = false;
@@ -151,6 +155,7 @@ export function TerminalPane({
       cwd,
       envRemove,
       keepShell,
+      paneNo: paneKey ? useStore.getState().panes[paneKey]?.no : undefined,
       cols: term.cols,
       rows: term.rows,
     });
@@ -198,6 +203,7 @@ export function TerminalPane({
         markActive();
         if (paneKey) noteOutput(paneKey);
         term.write(data, () => void ptyAck(pid, data.length).catch(() => {}));
+        dumper?.schedule();
       };
       const handle = (data: Uint8Array) => {
         if (id === null) pending.push(data);
@@ -328,6 +334,7 @@ export function TerminalPane({
       disposed = true;
       clearTimeout(activityTimer);
       clearTimeout(resizeTimer);
+      dumper?.dispose();
       ro.disconnect();
       window.removeEventListener(REFIT_EVENT, refit);
       termRef.current = null;
@@ -384,7 +391,9 @@ export function TerminalPane({
         <span className="pane-icon" aria-hidden style={icon && { color: icon.color }}>
           {icon?.glyph ?? '❯_'}
         </span>
-        <span className="pane-title">{title}</span>
+        <span className="pane-title" title={title}>
+          {paneNo ?? title}
+        </span>
         <span className="pane-cwd">{liveCwd}</span>
         <span className={`activity${active ? ' busy' : ''}${exitCode !== null ? ' dead' : ''}`}>
           <span>{exitCode !== null ? '종료됨' : active ? '출력 중' : '대기'}</span>

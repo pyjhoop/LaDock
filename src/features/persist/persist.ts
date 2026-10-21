@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { create } from 'zustand';
-import { createInitialState } from '../../store/ops';
+import { assignPaneNumbers, createInitialState } from '../../store/ops';
 import { useStore } from '../../store/store';
 import type { AppState } from '../../store/types';
 import { baseArgs, PROVIDER_META, useProviders } from '../ai/providers';
@@ -46,7 +46,7 @@ async function checkCwds(state: AppState): Promise<AppState> {
 }
 
 function commit(state: AppState) {
-  useStore.setState(state);
+  useStore.setState(assignPaneNumbers(state));
   useRestore.getState().set({ restore: { phase: 'ready' } });
 }
 

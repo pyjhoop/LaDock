@@ -52,6 +52,7 @@ LaDock/
 | `%APPDATA%\LaDock\tasks.json` | 자동 작업 목록 · 예약 · 마지막 실행 시각 | M6-01 |
 | `%APPDATA%\LaDock\task-history.json` | 자동 작업 실행 기록 (`RunRecord[]`, 최근 200건) | M6-03 |
 | `%APPDATA%\LaDock\task-logs\<runId>.log` | 실행 한 번의 출력 로그 | M6-03 |
+| `%APPDATA%\LaDock\panes\` | pane 화면 공유: `index.json` + `<순번>.txt` (앱을 켤 때 비움) | M7-01 |
 | `%APPDATA%\LaDock\limits\claude.json` | statusline 브리지가 쓴 `rate_limits` 스냅샷 | M2-03 |
 | `%APPDATA%\LaDock\backups\` | 사용자 설정 파일을 바꾸기 전 백업 (예: `~/.claude/settings.json`) | M2-03 |
 
@@ -72,6 +73,7 @@ interface PaneSpec {
   args?: string[];
   cwd: string;
   title?: string;
+  no?: number;                // 화면에 보이는 pane 순번 (앱 전체 유일, 닫으면 빈 번호 재사용) — M7-01
 }
 
 interface Window {            // UI에서는 "탭"
@@ -202,6 +204,10 @@ interface RunRecord {
 | `task_log_read` | `{ runId }` | 로그 전문 `string` (없으면 빈 문자열) | M6-03 |
 | `task_log_delete` | `{ runIds[] }` | – | M6-03 |
 | `task_history_load` / `task_history_save` | `{ json }` — `{ version, runs: RunRecord[] }` (최근 200건) | 원문 `string｜null` | M6-03 |
+| `pane_dump` | `{ no, text }` — pane 화면 텍스트를 `%APPDATA%\LaDock\panes\<no>.txt`에 쓴다 | – | M7-01 |
+| `panes_index` | `{ json, nos[] }` — `panes\index.json`을 쓰고 목록에 없는 `<no>.txt`를 지운다 | – | M7-01 |
+| `skills_install` | – — 설치된 AI 플랫폼에 `ladock-panes` 스킬을 설치 · 갱신 (앱 시작 때도 자동) | `{ platform, path, state, detail? }[]` | M7-01 |
+| `pty_spawn` 추가 인자 | `paneNo?` → 자식 환경변수 `LADOCK_PANE`, `LADOCK_PANES_DIR` | | M7-01 |
 | `remote_status` | – | `{ enabled, running, url?, error?, clients }` — `url`은 토큰 포함 접속 주소 | M5-01 |
 | `remote_set_enabled` | `{ enabled }` — Tailscale IP에 서버를 열거나 닫는다 | `RemoteStatus` | M5-01 |
 | `remote_set_https` | `{ enabled }` — `tailscale serve --bg --https=8443`로 HTTPS 주소를 열거나 닫는다 (기본 켬) | `RemoteStatus` (`httpsUrl` 추가) | M5-01 |

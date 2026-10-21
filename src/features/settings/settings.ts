@@ -16,6 +16,8 @@ export interface Settings {
   subscriptionOnly: boolean;
   /** 권한 확인 없이 실행 플래그를 붙인다 */
   skipPermissions: boolean;
+  /** 다른 에이전트가 pane 순번으로 화면을 읽을 수 있게 파일로 내놓는다 */
+  sharePanes: boolean;
   /** provider별 추가 인자 (공백 구분, "..." 로 묶기) */
   providerArgs: Record<ProviderId, string>;
 }
@@ -29,6 +31,7 @@ export const DEFAULT_SETTINGS: Settings = {
   copyOnSelect: false,
   subscriptionOnly: true,
   skipPermissions: true,
+  sharePanes: true,
   providerArgs: { claude: '', codex: '', antigravity: '' },
 };
 
@@ -74,6 +77,7 @@ export function parseSettings(text: string | null): Settings {
     copyOnSelect: bool(o.copyOnSelect, d.copyOnSelect),
     subscriptionOnly: bool(o.subscriptionOnly, d.subscriptionOnly),
     skipPermissions: bool(o.skipPermissions, d.skipPermissions),
+    sharePanes: bool(o.sharePanes, d.sharePanes),
     providerArgs: {
       claude: typeof args.claude === 'string' ? args.claude : '',
       codex: typeof args.codex === 'string' ? args.codex : '',

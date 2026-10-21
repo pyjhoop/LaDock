@@ -10,6 +10,8 @@ export interface SpawnArgs {
   rows: number;
   envRemove?: string[];
   keepShell?: boolean;
+  /** 화면에 보이는 pane 순번 → 자식 프로세스의 `LADOCK_PANE` */
+  paneNo?: number;
 }
 
 export function ptySpawn(args: SpawnArgs, onData: (data: Uint8Array) => void): Promise<number> {

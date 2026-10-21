@@ -32,7 +32,7 @@ export const useStore = create<AppState & Actions>()((set) => {
   // 모든 상태 변경이 여기를 지난다: store에서 사라진 pane의 PTY는 한 곳에서 종료한다.
   const apply = (f: (s: AppState) => AppState) =>
     set((cur) => {
-      const next = f(cur);
+      const next = ops.assignPaneNumbers(f(cur));
       for (const id of Object.keys(cur.panes)) if (!(id in next.panes)) killPanePty(id);
       return next;
     });

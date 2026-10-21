@@ -29,6 +29,8 @@ pub struct SpawnOptions {
     pub cols: u16,
     pub rows: u16,
     pub env_remove: Vec<String>,
+    /// 자식에게 추가로 넘길 환경변수
+    pub env: Vec<(String, String)>,
 }
 
 /// 프론트가 소비한 바이트를 세는 흐름 제어 장치.
@@ -93,6 +95,9 @@ impl PtyHandle {
         }
         for key in &opts.env_remove {
             cmd.env_remove(key);
+        }
+        for (key, value) in &opts.env {
+            cmd.env(key, value);
         }
 
         let mut child = pair.slave.spawn_command(cmd).map_err(|e| e.to_string())?;
