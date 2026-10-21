@@ -7,6 +7,7 @@ import { useActivity } from '../terminal/activity';
 import { useDetected } from '../terminal/detect';
 import { TasksSection } from '../tasks/TasksSection';
 import { InlineRename } from './InlineRename';
+import { ItemMenu, useItemMenu } from './ItemMenu';
 import { Glyphs } from './TitleTabs';
 import { PROVIDER_GLYPH, createSessionAndRename, useSessionsUi } from './ui';
 
@@ -24,6 +25,7 @@ export function Sidebar() {
   // 세션 카드 펼침 여부(없으면 활성 세션만 펼침) · 섹션 접힘 여부
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [folded, setFolded] = useState({ sessions: false, agents: false });
+  const itemMenu = useItemMenu();
   if (!open) return null;
   const agents = state.sessions.flatMap((sess) =>
     sess.windows.flatMap((w) =>
@@ -57,12 +59,13 @@ export function Sidebar() {
     state.selectWindow(id);
     if (drawer) closeDrawer();
   };
-  const renameProps = (target: 'session' | 'window', id: string) => ({
+  const renameProps = (target: 'session' | 'window', id: string, remove: () => void) => ({
     onDoubleClick: () => startRename({ target, id, from: 'side' }),
-    onContextMenu: (e: MouseEvent) => {
-      e.preventDefault();
-      startRename({ target, id, from: 'side' });
-    },
+    onContextMenu: (e: MouseEvent) =>
+      itemMenu.open(e, [
+        { label: '이름 변경', run: () => startRename({ target, id, from: 'side' }) },
+        { label: '제거', danger: true, run: remove },
+      ]),
   });
   const isRenaming = (target: 'session' | 'window', id: string) =>
     renaming?.from === 'side' && renaming.target === target && renaming.id === id;
@@ -117,7 +120,7 @@ export function Sidebar() {
                         <button
                           className="card-main"
                           onClick={() => selectSession(sess.id)}
-                          {...renameProps('session', sess.id)}
+                          {...renameProps('session', sess.id, () => state.closeSession(sess.id))}
                         >
                           <span className="sdot" />
                           <span className="name">{sess.name}</span>
@@ -156,7 +159,9 @@ export function Sidebar() {
                                 state.selectSession(sess.id);
                                 selectWindow(w.id);
                               }}
-                              {...renameProps('window', w.id)}
+                              {...renameProps('window', w.id, () =>
+                                state.closeWindow(sess.id, w.id),
+                              )}
                             >
                               <span className="num">{i + 1}</span>
                               <span className="name">{windowLabel(state, w)}</span>
@@ -222,6 +227,7 @@ export function Sidebar() {
           )}
         </section>
         <TasksSection />
+        <ItemMenu menu={itemMenu.menu} onClose={itemMenu.close} />
       </aside>
     </>
   );

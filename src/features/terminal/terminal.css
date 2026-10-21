@@ -161,3 +161,7 @@
   border: 0;
   border-top: 1px solid var(--border);
 }
+.pane-menu button.danger:hover {
+  background: color-mix(in srgb, var(--danger, #e5484d) 24%, transparent);
+  color: var(--danger, #e5484d);
+}

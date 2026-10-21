@@ -6,6 +6,7 @@ import type { PaneSpec } from '../../store/types';
 import { useDetected } from '../terminal/detect';
 import { useKeys } from '../keys/keys';
 import { InlineRename } from './InlineRename';
+import { ItemMenu, useItemMenu } from './ItemMenu';
 import { PROVIDER_GLYPH, providersOf, useSessionsUi } from './ui';
 import './sessions.css';
 
@@ -29,8 +30,9 @@ export function TitleTabs() {
   const sess = activeSession(state);
   const renaming = useSessionsUi((s) => s.renaming);
   const { startRename, stopRename } = useSessionsUi.getState();
-  const { renameSession, renameWindow, selectWindow, closeWindow, newWindow } = state;
+  const { renameSession, renameWindow, selectWindow, closeWindow, closeSession, newWindow } = state;
   const openOverlay = useKeys((s) => s.openOverlay);
+  const itemMenu = useItemMenu();
 
   const renamingSession =
     renaming?.target === 'session' && renaming.from === 'title' && renaming.id === sess.id;
@@ -48,13 +50,20 @@ export function TitleTabs() {
       ) : (
         <button
           className="sess-btn"
-          title="세션 · 탭 트리 (Ctrl+B s) — 우클릭: 이름 변경"
+          title="세션 · 탭 트리 (Ctrl+B s) — 우클릭: 이름 변경 · 제거"
           onClick={() => openOverlay({ kind: 'tree' })}
-          onContextMenu={(e) => {
-            e.preventDefault();
-            useKeys.getState().closeOverlay();
-            startRename({ target: 'session', id: sess.id, from: 'title' });
-          }}
+          onContextMenu={(e) =>
+            itemMenu.open(e, [
+              {
+                label: '이름 변경',
+                run: () => {
+                  useKeys.getState().closeOverlay();
+                  startRename({ target: 'session', id: sess.id, from: 'title' });
+                },
+              },
+              { label: '제거', danger: true, run: () => closeSession(sess.id) },
+            ])
+          }
           onDoubleClick={() => {
             useKeys.getState().closeOverlay();
             startRename({ target: 'session', id: sess.id, from: 'title' });
@@ -92,10 +101,15 @@ export function TitleTabs() {
               aria-selected={active}
               onClick={() => selectWindow(w.id)}
               onDoubleClick={() => startRename({ target: 'window', id: w.id, from: 'title' })}
-              onContextMenu={(e) => {
-                e.preventDefault();
-                startRename({ target: 'window', id: w.id, from: 'title' });
-              }}
+              onContextMenu={(e) =>
+                itemMenu.open(e, [
+                  {
+                    label: '이름 변경',
+                    run: () => startRename({ target: 'window', id: w.id, from: 'title' }),
+                  },
+                  { label: '제거', danger: true, run: () => closeWindow(sess.id, w.id) },
+                ])
+              }
               onAuxClick={(e) => e.button === 1 && closeWindow(sess.id, w.id)}
             >
               <span className="num">{i + 1}</span>
@@ -129,6 +143,7 @@ export function TitleTabs() {
           <IconPlus />
         </button>
       </div>
+      <ItemMenu menu={itemMenu.menu} onClose={itemMenu.close} />
     </>
   );
 }
