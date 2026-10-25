@@ -88,6 +88,8 @@ interface Session {
   id: string;
   name: string;
   color: string;
+  /** 프로젝트 폴더 (UI에서는 세션을 "프로젝트"라 부른다). 없으면 포커스된 pane 폴더 */
+  cwd?: string;
   windows: Window[];
   activeWindowId: string;
 }

@@ -122,6 +122,15 @@ describe('ops', () => {
     expect(s.activeSessionId).toBe(s.sessions[2].id);
   });
 
+  it('프로젝트 폴더를 주면 세션에 저장되고 첫 pane이 그 폴더에서 시작한다', () => {
+    let s = ops.createInitialState();
+    s = ops.newSession(s, 'api', 'C:/work/api');
+    const sess = ops.activeSession(s);
+    expect(sess.cwd).toBe('C:/work/api');
+    expect(ops.focusedPane(s)?.cwd).toBe('C:/work/api');
+    expect(ops.projectCwd(s, sess)).toBe('C:/work/api');
+  });
+
   it('auto-rename: name이 null이면 포커스된 pane의 프로그램 이름', () => {
     let s = ops.createInitialState();
     const w = win(s);

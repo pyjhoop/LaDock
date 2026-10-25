@@ -21,6 +21,9 @@ import { useUpdate } from '../features/update/updater';
 import { RestoreGate } from '../features/persist/RestoreGate';
 import { PaneChips } from '../features/layout/PaneChips';
 import { Workspace } from '../features/layout/Workspace';
+import { FilesPanel } from '../features/files/FilesPanel';
+import { FileViewer } from '../features/files/FileViewer';
+import { startGitDetect, useFiles } from '../features/files/files';
 import { Sidebar } from '../features/sessions/Sidebar';
 import { layoutModeOf, useSessionsUi } from '../features/sessions/ui';
 import { TerminalPane } from '../features/terminal/TerminalPane';
@@ -87,7 +90,10 @@ export function App() {
     const t = window.setTimeout(() => void useUpdate.getState().check({ silent: true }), 3000);
     return () => window.clearTimeout(t);
   }, []);
+  useEffect(() => startGitDetect(), []);
   const narrow = useSessionsUi((s) => s.mode === 'narrow');
+  const wide = useSessionsUi((s) => s.mode === 'wide');
+  const showFiles = useFiles((s) => !!s.git && s.panelOpen) && wide && !remoteClient;
   useEffect(() => {
     const onResize = () => {
       const mode = layoutModeOf(window.innerWidth);
@@ -119,7 +125,9 @@ export function App() {
               <div className="work">
                 {narrow && <PaneChips />}
                 <Workspace />
+                <FileViewer />
               </div>
+              {showFiles && <FilesPanel />}
             </>
           )}
         </main>

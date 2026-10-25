@@ -208,7 +208,7 @@ function RenameOverlay({
   return (
     <div className="overlay" onMouseDown={close}>
       <div className="overlay-box small" onMouseDown={(e) => e.stopPropagation()}>
-        <h2>{target === 'session' ? '세션 이름 변경' : '탭 이름 변경'}</h2>
+        <h2>{target === 'session' ? '프로젝트 이름 변경' : '탭 이름 변경'}</h2>
         <input
           ref={inputRef}
           autoFocus

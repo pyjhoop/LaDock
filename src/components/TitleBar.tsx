@@ -3,7 +3,8 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { nextTheme, themeInfo } from '../app/theme';
 import { useSettings } from '../features/settings/settings';
 
-import { IconAuto, IconMenu, IconMoon, IconSun } from './icons';
+import { IconAuto, IconMenu, IconMoon, IconPanelR, IconSun } from './icons';
+import { useFiles } from '../features/files/files';
 import { TitleTabs } from '../features/sessions/TitleTabs';
 import { useSessionsUi } from '../features/sessions/ui';
 
@@ -13,6 +14,9 @@ export function TitleBar() {
   const theme = useSettings((s) => s.settings.theme);
   const win = getCurrentWindow();
   const toggleSidebar = useSessionsUi((s) => s.toggleSidebar);
+
+  const filesOpen = useFiles((s) => s.panelOpen);
+  const wide = useSessionsUi((s) => s.mode === 'wide');
 
   const info = themeInfo(theme);
   const ThemeIcon = theme === 'system' ? IconAuto : info.dark ? IconMoon : IconSun;
@@ -35,6 +39,16 @@ export function TitleBar() {
       </div>
       <TitleTabs />
       <div className="spacer" data-tauri-drag-region />
+      {wide && !remoteClient && (
+        <button
+          className={`icon-btn${filesOpen ? ' on' : ''}`}
+          onClick={() => useFiles.getState().setPanelOpen(!filesOpen)}
+          title="파일 패널 접기/펼치기 (프로젝트 폴더 구조)"
+          aria-label="파일 패널"
+        >
+          <IconPanelR />
+        </button>
+      )}
       <button
         className="icon-btn"
         onClick={cycleTheme}

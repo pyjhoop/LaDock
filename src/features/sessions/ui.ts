@@ -1,4 +1,6 @@
+import { open } from '@tauri-apps/plugin-dialog';
 import { create } from 'zustand';
+import { remoteClient } from '../remote/client';
 import { useStore } from '../../store/store';
 import type { PaneSpec, ProviderId } from '../../store/types';
 
@@ -43,11 +45,28 @@ export const useSessionsUi = create<SessionsUi>()((set) => ({
     ),
 }));
 
-/** 새 세션을 만들고 바로 이름 입력 상태로 들어간다 */
-export function createSessionAndRename() {
-  useStore.getState().newSession();
-  const { activeSessionId } = useStore.getState();
-  useSessionsUi.getState().startRename({ target: 'session', id: activeSessionId, from: 'title' });
+/** 폴더 이름(경로의 마지막 조각) */
+export const folderName = (path: string) =>
+  path
+    .replace(/[\\/]+$/, '')
+    .split(/[\\/]/)
+    .pop() || path;
+
+/** 폴더 없이 셸 기본 위치(홈)에서 바로 시작하는 프로젝트 — AI를 빠르게 쓸 때 */
+export function addQuickProject() {
+  const { sessions, newSession } = useStore.getState();
+  const base = '빠른 시작';
+  let name = base;
+  for (let n = 2; sessions.some((s) => s.name === name); n++) name = `${base} ${n}`;
+  newSession(name, '');
+}
+
+/** 폴더를 골라 새 프로젝트로 추가한다. 취소하면 아무것도 하지 않는다. */
+export async function addProject() {
+  if (remoteClient) return useStore.getState().newSession();
+  const dir = await open({ directory: true, multiple: false, title: '프로젝트 폴더 선택' });
+  if (typeof dir !== 'string') return;
+  useStore.getState().newSession(folderName(dir), dir);
 }
 
 export const PROVIDER_GLYPH: Record<ProviderId, { glyph: string; color: string }> = {

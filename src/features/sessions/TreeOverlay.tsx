@@ -4,7 +4,7 @@ import { useStore } from '../../store/store';
 import { leaves } from '../../store/tree';
 import { useKeys } from '../keys/keys';
 import { Glyphs } from './TitleTabs';
-import { createSessionAndRename } from './ui';
+import { addProject } from './ui';
 
 type Item = { sessionId: string; windowId: string | null };
 
@@ -46,7 +46,7 @@ export function TreeOverlay() {
       else if (e.key === 'Enter') pick(items[sel]);
       else if (e.code === 'KeyC') {
         close();
-        if (e.shiftKey) createSessionAndRename();
+        if (e.shiftKey) void addProject();
         else useStore.getState().newWindow();
       } else return;
       e.preventDefault();
@@ -60,7 +60,7 @@ export function TreeOverlay() {
   return (
     <div className="overlay" onMouseDown={close}>
       <div className="overlay-box tree-box" onMouseDown={(e) => e.stopPropagation()}>
-        <h2>세션 · 탭</h2>
+        <h2>프로젝트 · 탭</h2>
         <div className="ch-list">
           {items.map((it, i) => {
             const sess = state.sessions.find((s) => s.id === it.sessionId)!;
@@ -98,7 +98,7 @@ export function TreeOverlay() {
           })}
         </div>
         <div className="ch-foot">
-          <kbd>↑↓</kbd> 이동 <kbd>Enter</kbd> 전환 <kbd>C</kbd> 새 세션 <kbd>c</kbd> 새 탭{' '}
+          <kbd>↑↓</kbd> 이동 <kbd>Enter</kbd> 전환 <kbd>C</kbd> 새 프로젝트 <kbd>c</kbd> 새 탭{' '}
           <kbd>Esc</kbd> 닫기
         </div>
       </div>

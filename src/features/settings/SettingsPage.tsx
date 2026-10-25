@@ -339,7 +339,7 @@ function RemoteField() {
         )}
         {msg && <small>{msg}</small>}
         <small>
-          PC에 열린 세션 · 탭 · pane을 그대로 보고 입력합니다. 처음 켜면 Windows 방화벽이 허용을
+          PC에 열린 프로젝트 · 탭 · pane을 그대로 보고 입력합니다. 처음 켜면 Windows 방화벽이 허용을
           물을 수 있어요 (개인 네트워크 허용).
         </small>
       </div>
@@ -407,7 +407,7 @@ export function SettingsPage() {
 
           {section === 'terminal' && (
             <>
-              <Row label="기본 셸" hint="새 세션 · 분할에 쓰는 셸">
+              <Row label="기본 셸" hint="새 프로젝트 · 분할에 쓰는 셸">
                 <select
                   value={s.defaultShell}
                   onChange={(e) => update({ defaultShell: e.target.value })}

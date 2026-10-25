@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { activeSession, activeWindow } from '../../store/ops';
 import { useStore } from '../../store/store';
 import { leaves } from '../../store/tree';
-import { createSessionAndRename, useSessionsUi } from '../sessions/ui';
+import { addProject, useSessionsUi } from '../sessions/ui';
 import { writePanePty } from '../terminal/registry';
 import {
   DEFAULT_PREFIX,
@@ -68,7 +68,7 @@ export function runCommand(cmd: Command) {
     case 'help':
       return keys.openOverlay({ kind: 'help' });
     case 'newSession':
-      return createSessionAndRename();
+      return void addProject();
     case 'renameSession':
       return keys.openOverlay({ kind: 'rename', target: 'session', id: sess.id, value: sess.name });
     case 'stepSession':

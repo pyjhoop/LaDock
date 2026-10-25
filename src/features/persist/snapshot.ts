@@ -48,6 +48,7 @@ export function isValidState(s: unknown): s is AppState {
   const sessionIds = new Set<string>();
   for (const sess of s.sessions) {
     if (!isObj(sess) || typeof sess.id !== 'string' || typeof sess.name !== 'string') return false;
+    if (sess.cwd !== undefined && typeof sess.cwd !== 'string') return false;
     if (typeof sess.color !== 'string' || !Array.isArray(sess.windows)) return false;
     if (sess.windows.length === 0 || typeof sess.activeWindowId !== 'string') return false;
     sessionIds.add(sess.id);

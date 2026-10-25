@@ -13,7 +13,7 @@ const k = (code: string, extra: Partial<KeyLike> = {}): KeyLike => ({
 });
 
 describe('resolveKey', () => {
-  it('대소문자: c = 새 탭, Shift+c = 새 세션', () => {
+  it('대소문자: c = 새 탭, Shift+c = 새 프로젝트', () => {
     expect(resolveKey(k('KeyC'))).toEqual({ id: 'newWindow' });
     expect(resolveKey(k('KeyC', { shiftKey: true }))).toEqual({ id: 'newSession' });
     expect(resolveKey(k('KeyX'))).toEqual({ id: 'closePane' });

@@ -53,7 +53,7 @@ function commit(state: AppState) {
 /** 시작할 때 한 번: 저장된 상태를 불러온다. 이어하기를 물을 AI pane이 있으면 물어본다. */
 export async function loadSaved(): Promise<void> {
   const ui = useRestore.getState();
-  // 기본 셸 설정이 첫 세션에 반영되도록 설정부터 읽는다
+  // 기본 셸 설정이 첫 프로젝트에 반영되도록 설정부터 읽는다
   await loadSettings();
   try {
     const text = await invoke<string | null>('state_load');
@@ -63,7 +63,7 @@ export async function loadSaved(): Promise<void> {
       const backup = await invoke<string | null>('state_quarantine').catch(() => null);
       return ui.set({
         restore: { phase: 'ready' },
-        notice: `저장된 레이아웃을 열 수 없어 새 세션으로 시작합니다 (${parsed.reason})${
+        notice: `저장된 레이아웃을 열 수 없어 새 프로젝트로 시작합니다 (${parsed.reason})${
           backup ? ` — 원본은 ${backup} 에 보관했습니다` : ''
         }`,
       });
@@ -74,7 +74,7 @@ export async function loadSaved(): Promise<void> {
     console.error('state_load 실패', e);
     ui.set({
       restore: { phase: 'ready' },
-      notice: '저장된 레이아웃을 읽지 못해 새 세션으로 시작합니다',
+      notice: '저장된 레이아웃을 읽지 못해 새 프로젝트로 시작합니다',
     });
   }
 }

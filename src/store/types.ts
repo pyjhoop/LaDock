@@ -32,6 +32,8 @@ export interface Session {
   id: string;
   name: string;
   color: string;
+  /** 프로젝트 폴더. 없으면 포커스된 pane의 폴더를 따른다 */
+  cwd?: string;
   windows: Window[];
   activeWindowId: string;
 }

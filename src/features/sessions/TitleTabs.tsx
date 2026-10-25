@@ -24,7 +24,7 @@ export function Glyphs({ panes }: { panes: (PaneSpec | undefined)[] }) {
   );
 }
 
-/** 타이틀바 안: 세션 버튼 → 현재 세션의 탭들 → [+] */
+/** 타이틀바 안: 프로젝트 버튼 → 현재 프로젝트의 탭들 → [+] */
 export function TitleTabs() {
   const state = useStore();
   const sess = activeSession(state);
@@ -50,7 +50,7 @@ export function TitleTabs() {
       ) : (
         <button
           className="sess-btn"
-          title="세션 · 탭 트리 (Ctrl+B s) — 우클릭: 이름 변경 · 제거"
+          title="프로젝트 · 탭 트리 (Ctrl+B s) — 우클릭: 이름 변경 · 제거"
           onClick={() => openOverlay({ kind: 'tree' })}
           onContextMenu={(e) =>
             itemMenu.open(e, [

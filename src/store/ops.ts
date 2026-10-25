@@ -34,11 +34,20 @@ export function createSession(
   color: string,
   profileId: string,
   cwd: string,
+  /** 프로젝트 폴더로 고정할지 (새 프로젝트 추가) */
+  projectCwd?: string,
 ): { session: Session; pane: PaneSpec } {
   const pane = newShellPane(profileId, cwd);
   const win = newWindowOf(pane);
   return {
-    session: { id: uid('s'), name, color, windows: [win], activeWindowId: win.id },
+    session: {
+      id: uid('s'),
+      name,
+      color,
+      ...(projectCwd ? { cwd: projectCwd } : null),
+      windows: [win],
+      activeWindowId: win.id,
+    },
     pane,
   };
 }
@@ -74,6 +83,13 @@ export const activeSession = (s: AppState): Session =>
 
 export const activeWindow = (sess: Session): Window =>
   sess.windows.find((w) => w.id === sess.activeWindowId) ?? sess.windows[0];
+
+/** 프로젝트 폴더: 지정한 폴더, 없으면 포커스된 pane의 현재 폴더 */
+export const projectCwd = (s: AppState, sess: Session): string => {
+  if (sess.cwd) return sess.cwd;
+  const win = activeWindow(sess);
+  return cwdOf(s.panes[win.focusPaneId]);
+};
 
 export const focusedPane = (s: AppState): PaneSpec | undefined => {
   const win = activeWindow(activeSession(s));
@@ -296,13 +312,19 @@ function nextColor(sessions: Session[]): string {
   );
 }
 
-export function newSession(s: AppState, name = `session-${s.sessions.length + 1}`): AppState {
+/** projectCwd를 주면 그 폴더를 프로젝트 폴더로 삼아 첫 pane도 거기서 시작한다. */
+export function newSession(
+  s: AppState,
+  name = `session-${s.sessions.length + 1}`,
+  projectCwd?: string,
+): AppState {
   const f = focusedPane(s);
   const { session, pane } = createSession(
     name,
     nextColor(s.sessions),
     f?.profileId ?? defaults.profile,
-    cwdOf(f),
+    projectCwd ?? cwdOf(f),
+    projectCwd,
   );
   return {
     sessions: [...s.sessions, session],

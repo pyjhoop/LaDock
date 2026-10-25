@@ -20,7 +20,7 @@ interface Actions {
   selectWindow: (windowId: string) => void;
   selectWindowByNumber: (n: number) => void;
   stepWindow: (delta: 1 | -1) => void;
-  newSession: (name?: string) => void;
+  newSession: (name?: string, cwd?: string) => void;
   renameSession: (sessionId: string, name: string) => void;
   closeSession: (sessionId: string) => void;
   selectSession: (sessionId: string) => void;
@@ -56,7 +56,7 @@ export const useStore = create<AppState & Actions>()((set) => {
     selectWindow: (id) => apply((s) => ops.selectWindow(s, id)),
     selectWindowByNumber: (n) => apply((s) => ops.selectWindowByNumber(s, n)),
     stepWindow: (d) => apply((s) => ops.stepWindow(s, d)),
-    newSession: (name) => apply((s) => ops.newSession(s, name)),
+    newSession: (name, cwd) => apply((s) => ops.newSession(s, name, cwd)),
     renameSession: (id, name) => apply((s) => ops.renameSession(s, id, name)),
     closeSession: (id) => apply((s) => ops.closeSession(s, id)),
     selectSession: (id) => apply((s) => ops.selectSession(s, id)),

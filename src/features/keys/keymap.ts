@@ -148,11 +148,11 @@ export interface HelpRow {
 }
 
 export const HELP_ROWS: HelpRow[] = [
-  { keys: 's / w', desc: '세션 · 탭 트리 열기' },
-  { keys: 'C', desc: '새 세션', extension: true },
-  { keys: '$', desc: '세션 이름 변경' },
-  { keys: '( / )', desc: '이전 / 다음 세션' },
-  { keys: 'X', desc: '세션 닫기', extension: true },
+  { keys: 's / w', desc: '프로젝트 · 탭 트리 열기' },
+  { keys: 'C', desc: '새 프로젝트(폴더 선택)', extension: true },
+  { keys: '$', desc: '프로젝트 이름 변경' },
+  { keys: '( / )', desc: '이전 / 다음 프로젝트' },
+  { keys: 'X', desc: '프로젝트 닫기', extension: true },
   { keys: 'c', desc: '새 탭' },
   { keys: ',', desc: '탭 이름 변경' },
   { keys: 'n / p', desc: '다음 / 이전 탭' },

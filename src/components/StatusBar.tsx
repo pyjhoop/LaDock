@@ -47,7 +47,7 @@ export function StatusBar() {
       <span className="hints">
         <span>
           <kbd>{p}</kbd>
-          <kbd>s</kbd> 세션
+          <kbd>s</kbd> 프로젝트
         </span>
         <span>
           <kbd>{p}</kbd>

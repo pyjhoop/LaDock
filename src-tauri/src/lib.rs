@@ -1,5 +1,6 @@
 mod agent_detect;
 mod bridge;
+mod files;
 mod limits;
 mod notify;
 mod panes;
@@ -69,6 +70,7 @@ pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_process::init())
+        .plugin(tauri_plugin_dialog::init())
         .setup(|app| {
             providers::start_watcher(app.handle().clone());
             limits::start_watcher(app.handle().clone());
@@ -118,6 +120,9 @@ pub fn run() {
             persist::state_save,
             persist::state_quarantine,
             persist::dirs_exist,
+            files::fs_root,
+            files::fs_list,
+            files::fs_read,
             persist::settings_load,
             persist::settings_save,
             persist::tasks_load,
