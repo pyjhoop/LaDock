@@ -1,7 +1,7 @@
 import { invoke } from '@tauri-apps/api/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { create } from 'zustand';
-import { assignPaneNumbers, createInitialState } from '../../store/ops';
+import { assignPaneNumbers, createEmptyState } from '../../store/ops';
 import { useStore } from '../../store/store';
 import type { AppState } from '../../store/types';
 import { baseArgs, PROVIDER_META, useProviders } from '../ai/providers';
@@ -57,7 +57,7 @@ export async function loadSaved(): Promise<void> {
   await loadSettings();
   try {
     const text = await invoke<string | null>('state_load');
-    if (text === null) return commit(createInitialState());
+    if (text === null) return commit(createEmptyState());
     const parsed = parseStateFile(text);
     if (!parsed.ok) {
       const backup = await invoke<string | null>('state_quarantine').catch(() => null);

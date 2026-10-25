@@ -24,6 +24,7 @@ import { Workspace } from '../features/layout/Workspace';
 import { FilesPanel } from '../features/files/FilesPanel';
 import { FileViewer } from '../features/files/FileViewer';
 import { startGitDetect, useFiles } from '../features/files/files';
+import { TabStrip } from '../features/sessions/TitleTabs';
 import { Sidebar } from '../features/sessions/Sidebar';
 import { layoutModeOf, useSessionsUi } from '../features/sessions/ui';
 import { TerminalPane } from '../features/terminal/TerminalPane';
@@ -123,6 +124,7 @@ export function App() {
             <>
               <Sidebar />
               <div className="work">
+                <TabStrip />
                 {narrow && <PaneChips />}
                 <Workspace />
                 <FileViewer />

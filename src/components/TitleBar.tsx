@@ -5,7 +5,7 @@ import { useSettings } from '../features/settings/settings';
 
 import { IconAuto, IconMenu, IconMoon, IconPanelR, IconSun } from './icons';
 import { useFiles } from '../features/files/files';
-import { TitleTabs } from '../features/sessions/TitleTabs';
+import { ProjectButton } from '../features/sessions/TitleTabs';
 import { useSessionsUi } from '../features/sessions/ui';
 
 const stroke = { fill: 'none', stroke: 'currentColor', strokeWidth: 1 } as const;
@@ -37,7 +37,7 @@ export function TitleBar() {
       <div className="brand" data-tauri-drag-region>
         <span className="label">LaDock</span>
       </div>
-      <TitleTabs />
+      <ProjectButton />
       <div className="spacer" data-tauri-drag-region />
       {wide && !remoteClient && (
         <button

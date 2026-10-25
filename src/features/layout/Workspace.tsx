@@ -1,4 +1,6 @@
+import { EmptyState } from './EmptyState';
 import { useRef, type PointerEvent } from 'react';
+import { DiffPane } from '../diff/DiffPane';
 import { REFIT_EVENT, TerminalPane } from '../terminal/TerminalPane';
 import { useStore } from '../../store/store';
 import { computeLayout, type Divider } from '../../store/tree';
@@ -89,32 +91,52 @@ function WindowLayout({ win, visible }: { win: Window; visible: boolean }) {
               display: hidden ? 'none' : undefined,
             }}
           >
-            <TerminalPane
-              paneKey={id}
-              profileId={spec.profileId}
-              title={spec.title ?? spec.command ?? spec.profileId}
-              cwd={spec.cwd || undefined}
-              command={spec.command}
-              args={spec.args}
-              envRemove={envRemoveFor(spec)}
-              keepShell={spec.kind === 'agent'}
-              fontFamily={fontFamily}
-              fontSize={fontSize}
-              copyOnSelect={copyOnSelect}
-              icon={spec.provider ? PROVIDER_GLYPH[spec.provider] : undefined}
-              focused={focused && visible}
-              zoomed={win.zoomed}
-              onFocus={() => focusPane(id)}
-              onSplit={(dir) => {
-                focusPane(id);
-                splitFocused(dir);
-              }}
-              onToggleZoom={() => {
-                focusPane(id);
-                toggleZoom();
-              }}
-              onClose={() => closePane(id)}
-            />
+            {spec.kind === 'diff' && spec.diff ? (
+              <DiffPane
+                paneKey={id}
+                root={spec.diff.root}
+                hash={spec.diff.hash}
+                focused={focused && visible}
+                zoomed={win.zoomed}
+                onFocus={() => focusPane(id)}
+                onSplit={(dir) => {
+                  focusPane(id);
+                  splitFocused(dir);
+                }}
+                onToggleZoom={() => {
+                  focusPane(id);
+                  toggleZoom();
+                }}
+                onClose={() => closePane(id)}
+              />
+            ) : (
+              <TerminalPane
+                paneKey={id}
+                profileId={spec.profileId}
+                title={spec.title ?? spec.command ?? spec.profileId}
+                cwd={spec.cwd || undefined}
+                command={spec.command}
+                args={spec.args}
+                envRemove={envRemoveFor(spec)}
+                keepShell={spec.kind === 'agent'}
+                fontFamily={fontFamily}
+                fontSize={fontSize}
+                copyOnSelect={copyOnSelect}
+                icon={spec.provider ? PROVIDER_GLYPH[spec.provider] : undefined}
+                focused={focused && visible}
+                zoomed={win.zoomed}
+                onFocus={() => focusPane(id)}
+                onSplit={(dir) => {
+                  focusPane(id);
+                  splitFocused(dir);
+                }}
+                onToggleZoom={() => {
+                  focusPane(id);
+                  toggleZoom();
+                }}
+                onClose={() => closePane(id)}
+              />
+            )}
           </div>
         );
       })}
@@ -132,6 +154,7 @@ export function Workspace() {
   const activeSessionId = useStore((s) => s.activeSessionId);
   return (
     <div className="workspace">
+      {sessions.length === 0 && <EmptyState />}
       {sessions.flatMap((sess) =>
         sess.windows.map((win) => (
           <WindowLayout

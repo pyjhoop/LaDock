@@ -62,13 +62,19 @@
   background: var(--sc);
   flex: none;
 }
-.tbar-sep {
-  width: 1px;
-  height: 18px;
-  align-self: center;
-  margin-right: 6px;
-  background: var(--border);
+/* 가운데 작업 영역 바로 위의 탭 줄 */
+.tabstrip {
   flex: none;
+  display: flex;
+  min-width: 0;
+  padding: 0 6px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  user-select: none;
+}
+.tabstrip .tabs {
+  flex: 1;
+  padding-top: 4px;
 }
 
 .tabs {

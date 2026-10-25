@@ -6,7 +6,9 @@ import { PROVIDER_GLYPH } from '../sessions/ui';
 /** 스택 모드: 활성 탭의 pane을 칩으로 나열해 전환한다 */
 export function PaneChips() {
   const state = useStore();
-  const win = activeWindow(activeSession(state));
+  const sess = activeSession(state);
+  if (!sess) return null;
+  const win = activeWindow(sess);
   return (
     <div className="chips" role="tablist">
       {leaves(win.root).map((id, i) => {

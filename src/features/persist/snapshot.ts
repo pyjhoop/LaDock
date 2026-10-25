@@ -31,7 +31,12 @@ function validPane(id: string, p: unknown): p is PaneSpec {
   return (
     isObj(p) &&
     p.id === id &&
-    (p.kind === 'shell' || p.kind === 'agent') &&
+    (p.kind === 'shell' ||
+      p.kind === 'agent' ||
+      (p.kind === 'diff' &&
+        isObj(p.diff) &&
+        typeof p.diff.root === 'string' &&
+        typeof p.diff.hash === 'string')) &&
     typeof p.profileId === 'string' &&
     typeof p.cwd === 'string' &&
     (p.args === undefined || (Array.isArray(p.args) && p.args.every((a) => typeof a === 'string')))
@@ -41,7 +46,9 @@ function validPane(id: string, p: unknown): p is PaneSpec {
 /** 구조가 맞는 AppState인지. 레이아웃이 가리키는 pane이 모두 있어야 한다. */
 export function isValidState(s: unknown): s is AppState {
   if (!isObj(s) || !isObj(s.panes) || !Array.isArray(s.sessions)) return false;
-  if (s.sessions.length === 0 || typeof s.activeSessionId !== 'string') return false;
+  if (typeof s.activeSessionId !== 'string') return false;
+  // 프로젝트가 하나도 없는 시작 화면 상태
+  if (s.sessions.length === 0) return s.activeSessionId === '' && Object.keys(s.panes).length === 0;
   const panes = s.panes;
   if (!Object.entries(panes).every(([id, p]) => validPane(id, p))) return false;
   const seen = new Set<string>();

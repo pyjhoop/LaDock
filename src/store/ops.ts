@@ -67,6 +67,11 @@ export function assignPaneNumbers(s: AppState): AppState {
   return { ...s, panes };
 }
 
+/** 프로젝트가 하나도 없는 상태 (시작 화면) */
+export function createEmptyState(): AppState {
+  return { sessions: [], activeSessionId: '', panes: {} };
+}
+
 export function createInitialState(): AppState {
   const { session, pane } = createSession('main', SESSION_COLORS[0], defaults.profile, '');
   return assignPaneNumbers({
@@ -78,7 +83,8 @@ export function createInitialState(): AppState {
 
 // ── 조회 ─────────────────────────────────────────
 
-export const activeSession = (s: AppState): Session =>
+/** 프로젝트가 없으면 undefined */
+export const activeSession = (s: AppState): Session | undefined =>
   s.sessions.find((x) => x.id === s.activeSessionId) ?? s.sessions[0];
 
 export const activeWindow = (sess: Session): Window =>
@@ -92,8 +98,8 @@ export const projectCwd = (s: AppState, sess: Session): string => {
 };
 
 export const focusedPane = (s: AppState): PaneSpec | undefined => {
-  const win = activeWindow(activeSession(s));
-  return s.panes[win.focusPaneId];
+  const sess = activeSession(s);
+  return sess && s.panes[activeWindow(sess).focusPaneId];
 };
 
 function locate(s: AppState, paneId: string) {
@@ -165,6 +171,7 @@ export function splitFocused(s: AppState, dir: 'row' | 'col', profileId?: string
 /** 포커스된 pane 옆에 주어진 pane을 붙인다 (AI 실행 등). */
 export function splitWithPane(s: AppState, dir: 'row' | 'col', pane: PaneSpec): AppState {
   const sess = activeSession(s);
+  if (!sess) return sessionWithPane(s, pane);
   const win = activeWindow(sess);
   return {
     ...mapSession(s, sess.id, (x) =>
@@ -179,7 +186,7 @@ export function splitWithPane(s: AppState, dir: 'row' | 'col', pane: PaneSpec): 
   };
 }
 
-/** 닫기 연쇄: pane → 탭 → 세션 → 기본 세션 */
+/** 닫기 연쇄: pane → 탭 → 프로젝트 → (마지막이면) 시작 화면 */
 export function closePane(s: AppState, paneId: string): AppState {
   const loc = locate(s, paneId);
   if (!loc) return s;
@@ -214,7 +221,9 @@ export function setRatio(s: AppState, windowId: string, path: SplitPath, ratio: 
 
 /** 화면상 dir 쪽에서 가장 가까운 pane으로 포커스를 옮긴다. 줌 상태에서는 무시. */
 export function moveFocus(s: AppState, dir: tree.Direction): AppState {
-  const win = activeWindow(activeSession(s));
+  const sess = activeSession(s);
+  if (!sess) return s;
+  const win = activeWindow(sess);
   if (win.zoomed) return s;
   const target = tree.neighborPane(tree.computeLayout(win.root), win.focusPaneId, dir);
   return target ? focusPane(s, target) : s;
@@ -222,6 +231,7 @@ export function moveFocus(s: AppState, dir: tree.Direction): AppState {
 
 export function resizeFocused(s: AppState, dir: tree.Direction): AppState {
   const sess = activeSession(s);
+  if (!sess) return s;
   return mapSession(s, sess.id, (x) =>
     mapWindow(x, x.activeWindowId, (w) => ({
       ...w,
@@ -232,6 +242,7 @@ export function resizeFocused(s: AppState, dir: tree.Direction): AppState {
 
 export function toggleZoom(s: AppState): AppState {
   const sess = activeSession(s);
+  if (!sess) return s;
   return mapSession(s, sess.id, (x) =>
     mapWindow(x, x.activeWindowId, (w) => ({ ...w, zoomed: !w.zoomed })),
   );
@@ -240,12 +251,17 @@ export function toggleZoom(s: AppState): AppState {
 // ── 탭(window) ───────────────────────────────────
 
 export function newWindow(s: AppState): AppState {
-  return newWindowWithPane(s, inheritedPane(s));
+  const sess = activeSession(s);
+  if (!sess) return s;
+  // 폴더를 지정한 프로젝트면 새 탭은 그 폴더에서 시작한다 (분할은 현재 폴더를 이어받는다)
+  const pane = inheritedPane(s);
+  return newWindowWithPane(s, sess.cwd ? { ...pane, cwd: sess.cwd } : pane);
 }
 
 /** 현재 세션에 주어진 pane 하나짜리 새 탭을 만든다. */
 export function newWindowWithPane(s: AppState, pane: PaneSpec): AppState {
   const sess = activeSession(s);
+  if (!sess) return sessionWithPane(s, pane);
   const win = newWindowOf(pane);
   return {
     ...mapSession(s, sess.id, (x) => ({
@@ -286,18 +302,19 @@ export function closeWindow(s: AppState, sessionId: string, windowId: string): A
 
 export function selectWindow(s: AppState, windowId: string): AppState {
   const sess = activeSession(s);
-  if (!sess.windows.some((w) => w.id === windowId)) return s;
+  if (!sess || !sess.windows.some((w) => w.id === windowId)) return s;
   return mapSession(s, sess.id, (x) => ({ ...x, activeWindowId: windowId }));
 }
 
 /** 1부터 시작하는 번호로 이동 (범위 밖이면 무시) */
 export function selectWindowByNumber(s: AppState, n: number): AppState {
-  const win = activeSession(s).windows[n - 1];
+  const win = activeSession(s)?.windows[n - 1];
   return win ? selectWindow(s, win.id) : s;
 }
 
 export function stepWindow(s: AppState, delta: 1 | -1): AppState {
   const sess = activeSession(s);
+  if (!sess) return s;
   const idx = sess.windows.findIndex((w) => w.id === sess.activeWindowId);
   return selectWindow(s, sess.windows[wrap(idx + delta, sess.windows.length)].id);
 }
@@ -333,6 +350,23 @@ export function newSession(
   };
 }
 
+/** 프로젝트가 없을 때 AI 실행 같은 곳에서 온 pane으로 "빠른 시작" 프로젝트를 만든다. */
+function sessionWithPane(s: AppState, pane: PaneSpec): AppState {
+  const win = newWindowOf(pane);
+  const session: Session = {
+    id: uid('s'),
+    name: '빠른 시작',
+    color: nextColor(s.sessions),
+    windows: [win],
+    activeWindowId: win.id,
+  };
+  return {
+    sessions: [...s.sessions, session],
+    activeSessionId: session.id,
+    panes: { ...s.panes, [pane.id]: pane },
+  };
+}
+
 export function renameSession(s: AppState, sessionId: string, name: string): AppState {
   const trimmed = name.trim();
   return trimmed ? mapSession(s, sessionId, (x) => ({ ...x, name: trimmed })) : s;
@@ -344,14 +378,8 @@ export function closeSession(s: AppState, sessionId: string): AppState {
   const removed = s.sessions[idx].windows.flatMap((w) => tree.leaves(w.root));
   const panes = without(s.panes, removed);
   const sessions = s.sessions.filter((x) => x.id !== sessionId);
-  if (sessions.length === 0) {
-    const { session, pane } = createSession('main', SESSION_COLORS[0], defaults.profile, '');
-    return {
-      sessions: [session],
-      activeSessionId: session.id,
-      panes: { ...panes, [pane.id]: pane },
-    };
-  }
+  // 마지막 프로젝트를 지우면 빈 시작 화면으로 돌아간다
+  if (sessions.length === 0) return { sessions, activeSessionId: '', panes };
   const activeSessionId =
     s.activeSessionId === sessionId
       ? sessions[Math.min(idx, sessions.length - 1)].id
@@ -370,6 +398,7 @@ export function selectSessionByNumber(s: AppState, n: number): AppState {
 }
 
 export function stepSession(s: AppState, delta: 1 | -1): AppState {
+  if (s.sessions.length === 0) return s;
   const idx = s.sessions.findIndex((x) => x.id === s.activeSessionId);
   return selectSession(s, s.sessions[wrap(idx + delta, s.sessions.length)].id);
 }

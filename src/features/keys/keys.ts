@@ -55,6 +55,20 @@ export function runCommand(cmd: Command) {
   const store = useStore.getState();
   const keys = useKeys.getState();
   const sess = activeSession(store);
+  // 프로젝트가 없을 때는 프로젝트 · 설정 · 도움말 계열만 동작한다
+  if (!sess) {
+    switch (cmd.id) {
+      case 'palette':
+      case 'tasks':
+      case 'settings':
+      case 'help':
+        return keys.openOverlay({ kind: cmd.id });
+      case 'newSession':
+        return void addProject();
+      default:
+        return;
+    }
+  }
   const win = activeWindow(sess);
   switch (cmd.id) {
     case 'palette':

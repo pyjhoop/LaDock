@@ -6,8 +6,11 @@ export type LayoutNode =
 
 export interface PaneSpec {
   id: string;
-  kind: 'shell' | 'agent';
+  /** diff: 커밋 변경 내용 보기 (터미널이 아님) */
+  kind: 'shell' | 'agent' | 'diff';
   provider?: ProviderId;
+  /** kind가 diff일 때: 어느 저장소의 어느 커밋인지 */
+  diff?: { root: string; hash: string };
   profileId: string;
   command?: string;
   args?: string[];

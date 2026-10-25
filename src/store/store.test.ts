@@ -10,7 +10,8 @@ import * as tree from './tree';
 import { useStore } from './store';
 import type { AppState } from './types';
 
-const win = (s: AppState) => ops.activeWindow(ops.activeSession(s));
+const sess = (s: AppState) => ops.activeSession(s)!;
+const win = (s: AppState) => ops.activeWindow(sess(s));
 
 describe('tree', () => {
   const p = (paneId: string) => ({ type: 'pane' as const, paneId });
@@ -82,23 +83,37 @@ describe('ops', () => {
     // 두 번째 세션의 유일한 pane → 세션이 닫힘
     s = ops.closePane(s, win(s).focusPaneId);
     expect(s.sessions).toHaveLength(1);
-    expect(ops.activeSession(s).windows).toHaveLength(2);
+    expect(sess(s).windows).toHaveLength(2);
 
     // 탭 하나씩 닫다가 마지막 pane → 기본 세션
     s = ops.closePane(s, win(s).focusPaneId);
-    expect(ops.activeSession(s).windows).toHaveLength(1);
+    expect(sess(s).windows).toHaveLength(1);
     s = ops.closePane(s, win(s).focusPaneId);
+    expect(s.sessions).toHaveLength(0);
+    expect(s.activeSessionId).toBe('');
+    expect(Object.keys(s.panes)).toHaveLength(0);
+    expect(ops.focusedPane(s)).toBeUndefined();
+  });
+
+  it('프로젝트가 없을 때: 탭 · 분할은 무시하고, pane을 열면 빠른 시작 프로젝트가 생긴다', () => {
+    const e = ops.createEmptyState();
+    expect(ops.newWindow(e)).toBe(e);
+    expect(ops.stepSession(e, 1)).toBe(e);
+    const s = ops.splitWithPane(e, 'row', {
+      id: 'a1',
+      kind: 'shell',
+      profileId: 'pwsh',
+      cwd: '',
+    });
     expect(s.sessions).toHaveLength(1);
-    expect(ops.activeSession(s).name).toBe('main');
-    expect(Object.keys(s.panes)).toHaveLength(1);
-    expect(ops.focusedPane(s)?.profileId).toBe('pwsh');
+    expect(s.sessions[0].name).toBe('빠른 시작');
   });
 
   it('탭 이동: 번호 · 다음/이전(순환)', () => {
     let s = ops.createInitialState();
     s = ops.newWindow(s);
     s = ops.newWindow(s);
-    const ids = ops.activeSession(s).windows.map((w) => w.id);
+    const ids = sess(s).windows.map((w) => w.id);
     s = ops.selectWindowByNumber(s, 1);
     expect(win(s).id).toBe(ids[0]);
     s = ops.stepWindow(s, -1);
@@ -125,10 +140,13 @@ describe('ops', () => {
   it('프로젝트 폴더를 주면 세션에 저장되고 첫 pane이 그 폴더에서 시작한다', () => {
     let s = ops.createInitialState();
     s = ops.newSession(s, 'api', 'C:/work/api');
-    const sess = ops.activeSession(s);
-    expect(sess.cwd).toBe('C:/work/api');
+    const cur = sess(s);
+    expect(cur.cwd).toBe('C:/work/api');
     expect(ops.focusedPane(s)?.cwd).toBe('C:/work/api');
-    expect(ops.projectCwd(s, sess)).toBe('C:/work/api');
+    expect(ops.projectCwd(s, cur)).toBe('C:/work/api');
+    // 새 탭은 프로젝트 폴더에서 시작한다
+    s = ops.newWindow(s);
+    expect(ops.focusedPane(s)?.cwd).toBe('C:/work/api');
   });
 
   it('auto-rename: name이 null이면 포커스된 pane의 프로그램 이름', () => {
@@ -168,7 +186,7 @@ describe('store → PTY 종료', () => {
     const sid = useStore.getState().sessions[0].id;
     useStore.getState().closeSession(sid);
     expect(killed.sort()).toEqual(all.sort());
-    expect(Object.keys(useStore.getState().panes)).toHaveLength(1);
+    expect(Object.keys(useStore.getState().panes)).toHaveLength(0);
   });
 });
 
@@ -191,7 +209,7 @@ describe('openPane (AI 실행)', () => {
 
   it('새 탭으로 열면 현재 세션에 탭이 늘어난다', () => {
     const s = ops.newWindowWithPane(ops.createInitialState(), agent('a2'));
-    expect(ops.activeSession(s).windows).toHaveLength(2);
+    expect(sess(s).windows).toHaveLength(2);
     expect(win(s).focusPaneId).toBe('a2');
   });
 });

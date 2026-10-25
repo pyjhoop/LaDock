@@ -12,37 +12,41 @@ export function StatusBar() {
   const prefix = useKeys((s) => s.prefix);
   const openOverlay = useKeys((s) => s.openOverlay);
   const sess = activeSession(state);
-  const win = activeWindow(sess);
-  const ids = leaves(win.root);
-  const idx = ids.indexOf(win.focusPaneId) + 1;
-  const cwd = state.panes[win.focusPaneId]?.cwd;
+  const win = sess && activeWindow(sess);
+  const ids = win ? leaves(win.root) : [];
+  const idx = win ? ids.indexOf(win.focusPaneId) + 1 : 0;
+  const cwd = win && state.panes[win.focusPaneId]?.cwd;
   const p = prefixLabel(prefix).replace('Ctrl+', '^');
 
   return (
     <footer className="statusbar">
       <span className={`prefix-chip${prefixActive ? ' on' : ''}`}>PREFIX</span>
-      <span className="sess">
-        <span className="sdot" style={{ ['--sc' as string]: sess.color }} />
-        {sess.name}
-      </span>
-      <span className="wins">
-        {sess.windows.map((w, i) => {
-          const on = w.id === sess.activeWindowId;
-          return (
-            <span key={w.id} className={on ? 'on' : undefined}>
-              {i + 1}:{windowLabel(state, w)}
-              {on && '*'}
-            </span>
-          );
-        })}
-      </span>
-      <span>
-        pane {idx}/{ids.length}
-        {win.zoomed && ' · ZOOM'}
-      </span>
-      <span className="cwd" title={cwd || undefined}>
-        {cwd}
-      </span>
+      {sess && win && (
+        <>
+          <span className="sess">
+            <span className="sdot" style={{ ['--sc' as string]: sess.color }} />
+            {sess.name}
+          </span>
+          <span className="wins">
+            {sess.windows.map((w, i) => {
+              const on = w.id === sess.activeWindowId;
+              return (
+                <span key={w.id} className={on ? 'on' : undefined}>
+                  {i + 1}:{windowLabel(state, w)}
+                  {on && '*'}
+                </span>
+              );
+            })}
+          </span>
+          <span>
+            pane {idx}/{ids.length}
+            {win.zoomed && ' · ZOOM'}
+          </span>
+          <span className="cwd" title={cwd || undefined}>
+            {cwd}
+          </span>
+        </>
+      )}
       <span className="grow" />
       <span className="hints">
         <span>

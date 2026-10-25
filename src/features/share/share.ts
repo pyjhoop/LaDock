@@ -90,7 +90,8 @@ export function buildIndex(
       const shown = sess.id === s.activeSessionId && win.id === sess.activeWindowId;
       for (const id of leaves(win.root)) {
         const p = s.panes[id];
-        if (!p || p.no === undefined) continue;
+        // 터미널이 아닌 pane(변경 내용 보기)은 화면 공유 대상이 아니다
+        if (!p || p.no === undefined || p.kind === 'diff') continue;
         entries.push({
           no: p.no,
           session: sess.name,

@@ -24,19 +24,18 @@ export function Glyphs({ panes }: { panes: (PaneSpec | undefined)[] }) {
   );
 }
 
-/** 타이틀바 안: 프로젝트 버튼 → 현재 프로젝트의 탭들 → [+] */
-export function TitleTabs() {
+/** 타이틀바 안: 현재 프로젝트 버튼 */
+export function ProjectButton() {
   const state = useStore();
   const sess = activeSession(state);
   const renaming = useSessionsUi((s) => s.renaming);
   const { startRename, stopRename } = useSessionsUi.getState();
-  const { renameSession, renameWindow, selectWindow, closeWindow, closeSession, newWindow } = state;
+  const { renameSession, closeSession } = state;
   const openOverlay = useKeys((s) => s.openOverlay);
   const itemMenu = useItemMenu();
-
+  if (!sess) return null;
   const renamingSession =
     renaming?.target === 'session' && renaming.from === 'title' && renaming.id === sess.id;
-
   return (
     <>
       {renamingSession ? (
@@ -74,7 +73,23 @@ export function TitleTabs() {
           <IconChevD />
         </button>
       )}
-      <div className="tbar-sep" />
+      <ItemMenu menu={itemMenu.menu} onClose={itemMenu.close} />
+    </>
+  );
+}
+
+/** 가운데 작업 영역 위: 현재 프로젝트의 탭들 → [+] */
+export function TabStrip() {
+  const state = useStore();
+  const sess = activeSession(state);
+  const renaming = useSessionsUi((s) => s.renaming);
+  const { startRename, stopRename } = useSessionsUi.getState();
+  const { renameWindow, selectWindow, closeWindow, newWindow } = state;
+  const itemMenu = useItemMenu();
+  if (!sess) return null;
+
+  return (
+    <div className="tabstrip">
       <div className="tabs" role="tablist">
         {sess.windows.map((w, i) => {
           const active = w.id === sess.activeWindowId;
@@ -144,6 +159,6 @@ export function TitleTabs() {
         </button>
       </div>
       <ItemMenu menu={itemMenu.menu} onClose={itemMenu.close} />
-    </>
+    </div>
   );
 }

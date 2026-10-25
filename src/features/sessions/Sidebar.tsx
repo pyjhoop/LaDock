@@ -6,26 +6,14 @@ import { leaves } from '../../store/tree';
 import { PROVIDER_META } from '../ai/providers';
 import { useActivity } from '../terminal/activity';
 import { useDetected } from '../terminal/detect';
-import { usePaneCwds } from '../terminal/registry';
 import { TasksSection } from '../tasks/TasksSection';
 import { InlineRename } from './InlineRename';
 import { ItemMenu, useItemMenu } from './ItemMenu';
-import { Glyphs } from './TitleTabs';
 import { PROVIDER_GLYPH, addProject, addQuickProject, useSessionsUi } from './ui';
-
-/** 탭의 기본 경로: 맨 처음 pane의 현재 폴더 */
-function baseCwd(
-  state: ReturnType<typeof useStore.getState>,
-  w: Parameters<typeof windowLabel>[1],
-  live: Record<string, string>,
-): string {
-  const first = leaves(w.root)[0];
-  return (first && live[first]) || state.panes[first]?.cwd || '';
-}
 
 const STATE_LABEL = { working: '작업 중', done: '완료', idle: '대기' } as const;
 
-/** 프로젝트 목록. 프로젝트마다 탭 목록과, 그 아래 접을 수 있는 실행 중 에이전트가 붙는다. */
+/** 프로젝트 목록. 프로젝트마다 그 아래 접을 수 있는 실행 중 에이전트가 붙는다 (탭은 상단 탭 줄에만 둔다). */
 export function Sidebar() {
   const state = useStore();
   const mode = useSessionsUi((s) => s.mode);
@@ -34,22 +22,17 @@ export function Sidebar() {
   const renaming = useSessionsUi((s) => s.renaming);
   const detected = useDetected((s) => s.byPane);
   const activity = useActivity((s) => s.byPane);
-  const liveCwds = usePaneCwds((s) => s.byPane);
   // 프로젝트 펼침(없으면 활성 프로젝트만) · 에이전트 접힘(없으면 펼침) · 프로젝트 영역 접힘
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [agentsFolded, setAgentsFolded] = useState<Record<string, boolean>>({});
   const [listFolded, setListFolded] = useState(false);
   const itemMenu = useItemMenu();
   if (!open) return null;
-  const { renameSession, renameWindow } = state;
+  const { renameSession } = state;
   const { startRename, stopRename, closeDrawer } = useSessionsUi.getState();
-  // 드로어에서는 프로젝트 · 탭을 고르면 닫는다
+  // 드로어에서는 프로젝트를 고르면 닫는다
   const selectSession = (id: string) => {
     state.selectSession(id);
-    if (drawer) closeDrawer();
-  };
-  const selectWindow = (id: string) => {
-    state.selectWindow(id);
     if (drawer) closeDrawer();
   };
   const renameProps = (target: 'session' | 'window', id: string, remove: () => void) => ({
@@ -158,43 +141,6 @@ export function Sidebar() {
                           <div className="proj-path" title={cwd}>
                             {cwd}
                           </div>
-                        )}
-                        {sess.windows.map((w, i) =>
-                          isRenaming('window', w.id) ? (
-                            <InlineRename
-                              key={w.id}
-                              value={windowLabel(state, w)}
-                              placeholder="비우면 자동 이름"
-                              onDone={(text) => {
-                                if (text !== null) renameWindow(w.id, text);
-                                stopRename();
-                              }}
-                            />
-                          ) : (
-                            <button
-                              key={w.id}
-                              className={`t-win${active && w.id === sess.activeWindowId ? ' active' : ''}`}
-                              onClick={() => {
-                                state.selectSession(sess.id);
-                                selectWindow(w.id);
-                              }}
-                              {...renameProps('window', w.id, () =>
-                                state.closeWindow(sess.id, w.id),
-                              )}
-                            >
-                              <span className="num">{i + 1}</span>
-                              <span className="name">{windowLabel(state, w)}</span>
-                              <span className="meta">
-                                <Glyphs panes={leaves(w.root).map((id) => state.panes[id])} />
-                                <span>{leaves(w.root).length}p</span>
-                              </span>
-                              {baseCwd(state, w, liveCwds) && (
-                                <span className="wcwd" title={baseCwd(state, w, liveCwds)}>
-                                  {baseCwd(state, w, liveCwds)}
-                                </span>
-                              )}
-                            </button>
-                          ),
                         )}
                         {agents.length > 0 && (
                           <div className="proj-agent-box">

@@ -38,7 +38,7 @@ export const useStore = create<AppState & Actions>()((set) => {
     });
 
   return {
-    ...ops.createInitialState(),
+    ...ops.createEmptyState(),
     focusPane: (id) => apply((s) => ops.focusPane(s, id)),
     splitFocused: (dir, profileId) => apply((s) => ops.splitFocused(s, dir, profileId)),
     openPane: (where, pane) =>

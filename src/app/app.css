@@ -189,7 +189,6 @@ svg {
   .brand .label,
   .statusbar .hints,
   .statusbar .wins,
-  .tbar-sep,
   .tab .tglyphs {
     display: none;
   }

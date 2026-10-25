@@ -184,3 +184,155 @@
 .fresize:hover {
   background: color-mix(in srgb, var(--accent) 40%, transparent);
 }
+
+.gsum {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11.5px;
+}
+.gsum.err,
+.gerr {
+  color: var(--danger);
+  word-break: break-word;
+}
+.gsync {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gtag {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+.gtag b {
+  font: 700 11px var(--mono);
+}
+.gtag.ok {
+  color: var(--ok);
+}
+.gtag.warn {
+  color: var(--amber);
+}
+.gtag.info {
+  color: var(--muted);
+  font-weight: 400;
+}
+.gfetch {
+  flex: none;
+  padding: 1px 8px;
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.gfetch:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--accent);
+}
+.gfetch:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.gchanges {
+  color: var(--muted);
+}
+.ftabs {
+  flex: none;
+  display: flex;
+  gap: 2px;
+  padding: 4px 8px 0;
+  border-bottom: 1px solid var(--border);
+}
+.ftabs button {
+  padding: 5px 12px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+.ftabs button:hover {
+  color: var(--text);
+}
+.ftabs button.on {
+  color: var(--text);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.glog {
+  padding: 4px 0 12px;
+}
+.gcommit {
+  padding: 6px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.gcommit:hover {
+  background: var(--panel-2);
+}
+.gsubject {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12.5px;
+}
+.gmeta {
+  display: flex;
+  gap: 8px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--muted);
+}
+.gmeta code {
+  flex: none;
+  font: 11px var(--mono);
+  color: var(--accent);
+}
+.gmeta span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.grefs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 3px;
+}
+.gref {
+  padding: 0 6px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  color: var(--accent);
+  font: 10.5px var(--mono);
+}
+.gmore {
+  width: calc(100% - 24px);
+  margin: 8px 12px 0;
+  padding: 5px;
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.gmore:hover {
+  color: var(--text);
+}
+.glog .gerr {
+  padding: 6px 12px;
+}
+
+button.gcommit {
+  display: block;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
