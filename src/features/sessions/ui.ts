@@ -18,7 +18,23 @@ export type LayoutMode = 'wide' | 'mid' | 'narrow';
 export const layoutModeOf = (width: number): LayoutMode =>
   width >= 1024 ? 'wide' : width >= 640 ? 'mid' : 'narrow';
 
+export const SIDEBAR_MIN = 200;
+export const SIDEBAR_MAX = 420;
+export const SIDEBAR_DEFAULT = 252;
+const SIDEBAR_KEY = 'ladock.sidebarWidth';
+function loadSidebarWidth(): number {
+  try {
+    const n = Number(localStorage.getItem(SIDEBAR_KEY));
+    if (n >= SIDEBAR_MIN && n <= SIDEBAR_MAX) return n;
+  } catch {
+    // 기본값 사용
+  }
+  return SIDEBAR_DEFAULT;
+}
+
 interface SessionsUi {
+  sidebarWidth: number;
+  setSidebarWidth: (w: number) => void;
   renaming: Renaming;
   sidebarOpen: boolean;
   mode: LayoutMode;
@@ -31,6 +47,16 @@ interface SessionsUi {
 }
 
 export const useSessionsUi = create<SessionsUi>()((set) => ({
+  sidebarWidth: loadSidebarWidth(),
+  setSidebarWidth: (w) => {
+    const sidebarWidth = Math.min(SIDEBAR_MAX, Math.max(SIDEBAR_MIN, Math.round(w)));
+    set({ sidebarWidth });
+    try {
+      localStorage.setItem(SIDEBAR_KEY, String(sidebarWidth));
+    } catch {
+      // 저장 못 해도 동작에는 지장 없다
+    }
+  },
   renaming: null,
   sidebarOpen: true,
   mode: layoutModeOf(window.innerWidth),
